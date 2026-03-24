@@ -10,6 +10,11 @@ class Config:
     SQLALCHEMY_DATABASE_URI = db_url or "postgresql+psycopg2://infosys_user:infosys123@localhost:5432/infosys_db?client_encoding=utf8"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    }
+
     MAIL_SERVER = "smtp.gmail.com"
     MAIL_PORT = 587
     MAIL_USE_TLS = True
@@ -22,5 +27,5 @@ class Config:
 
     SESSION_COOKIE_NAME = "infosys_session"
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SECURE = False
+    SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = "Lax"

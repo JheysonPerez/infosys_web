@@ -2,9 +2,15 @@ from domain.models.contact_message import ContactMessage
 from infrastructure.database.postgres import db
 from infrastructure.mail.smtp import send_email
 import os
+import threading
+
+def send_async_email(subject, body, recipients):
+    try:
+        send_email(subject, body, recipients)
+    except Exception:
+        pass
 
 def save_contact_message(name, email, phone, message):
-    # Guardar en la base de datos
     contact = ContactMessage(
         name=name,
         email=email,
@@ -14,7 +20,6 @@ def save_contact_message(name, email, phone, message):
     db.session.add(contact)
     db.session.commit()
 
-    # Correo de confirmación al usuario
     subject_user = "Gracias por contactarnos"
     body_user = (
         f"Hola {name},\n\n"
@@ -23,13 +28,8 @@ def save_contact_message(name, email, phone, message):
         "Saludos,\nInfo & Sys Corporation"
     )
 
-    try:
-        send_email(subject_user, body_user, [email])
-    except Exception:
-        # Opcional: aquí puedes registrar el error en logs si quieres
-        pass
+    threading.Thread(target=send_async_email, args=(subject_user, body_user, [email])).start()
 
-    # Correo al administrador con todos los datos del formulario
     admin_email = os.getenv("MAIL_RECEIVER")
     if admin_email:
         subject_admin = f"Nuevo mensaje de contacto de {name}"
@@ -39,7 +39,4 @@ def save_contact_message(name, email, phone, message):
             f"Teléfono: {phone}\n"
             f"Mensaje:\n{message}"
         )
-        try:
-            send_email(subject_admin, body_admin, [admin_email])
-        except Exception:
-            pass
+        threading.Thread(target=send_async_email, args=(subject_admin, body_admin, [admin_email])).start()
