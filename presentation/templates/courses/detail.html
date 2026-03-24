@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}{{ course.title }} | Cursos{% endblock %}
+
+{% block content %}
+
+<div class="card shadow-sm p-4">
+
+    <div class="row g-4 align-items-start">
+
+        <div class="col-md-7">
+
+            <h2 class="mb-2">{{ course.title }}</h2>
+
+            {% if course.featured %}
+                <span class="badge bg-primary mb-3">Curso destacado</span>
+            {% endif %}
+
+            {% if course.description %}
+                <p class="text-muted">
+                    {{ course.description }}
+                </p>
+            {% endif %}
+
+            <hr>
+
+            <h5 class="mb-3">Información del curso</h5>
+
+            <p>
+                {% if course.modality %}
+                    <strong>Modalidad:</strong> {{ course.modality }}
+                {% endif %}
+
+                {% if course.level %}
+                    &nbsp;|&nbsp;
+                    <strong>Nivel:</strong> {{ course.level }}
+                {% endif %}
+            </p>
+
+            <p>
+                {% if course.duration_weeks %}
+                    <strong>Duración:</strong> {{ course.duration_weeks }} semanas
+                {% endif %}
+
+                {% if course.estimated_hours %}
+                    &nbsp;|&nbsp;
+                    <strong>Horas:</strong> {{ course.estimated_hours }} h
+                {% endif %}
+            </p>
+
+            {% if course.price %}
+                <p><strong>Precio:</strong> S/. {{ "%.2f"|format(course.price) }}</p>
+            {% else %}
+                <p><strong>Precio:</strong> Consultar</p>
+            {% endif %}
+
+            {% if course.instructor %}
+                <p><strong>Instructor:</strong> {{ course.instructor }}</p>
+            {% endif %}
+
+            {% if course.syllabus %}
+                <p><strong>Temario:</strong><br>{{ course.syllabus }}</p>
+            {% endif %}
+
+            {% if course.additional_info %}
+                <p><strong>Información adicional:</strong><br>{{ course.additional_info }}</p>
+            {% endif %}
+
+            <p class="mt-3">
+                <strong>Inscripción:</strong><br>
+                Contáctenos por nuestros canales oficiales.
+            </p>
+
+            <a href="{{ url_for('courses.list_courses') }}" class="btn btn-secondary mt-3">
+                Volver a Cursos
+            </a>
+
+        </div>
+
+        <div class="col-md-5">
+
+            {% if course.image %}
+                <img src="{{ url_for('static', filename='images/courses/' ~ course.image) }}"
+                     class="img-fluid rounded shadow-sm w-100"
+                     style="height: 300px; object-fit: cover;">
+            {% else %}
+                <img src="{{ url_for('static', filename='images/logo.png') }}"
+                     class="img-fluid rounded shadow-sm w-100"
+                     style="height: 300px; object-fit: cover;">
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

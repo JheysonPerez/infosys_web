@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ "Editar Miembro" if member else "Nuevo Miembro" }} | Info & Sys
+{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">
+    {{ "Editar Miembro del Equipo" if member else "Registrar Nuevo Miembro" }}
+</h2>
+
+<form method="post" enctype="multipart/form-data">
+
+    <div class="card p-4 shadow-sm">
+
+        <div class="mb-3">
+            <label class="form-label">Nombre completo <span class="text-danger">*</span></label>
+            <input type="text" name="full_name" class="form-control"
+                   value="{{ member.full_name if member else '' }}"
+                   required
+                   placeholder="Ej: Juan Pérez Gómez">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Cargo <span class="text-danger">*</span></label>
+            <input type="text" name="role" class="form-control"
+                   value="{{ member.role if member else '' }}"
+                   required
+                   placeholder="Ej: Gerente General">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">
+                Imagen 
+                {% if not member %} <span class="text-danger">*</span>{% endif %}
+            </label>
+            <input type="file" name="image" class="form-control" accept="image/*"
+                   {% if not member %}required{% endif %}>
+            
+            {% if member and member.image %}
+                <small class="text-muted d-block mt-2">
+                    Imagen actual:
+                </small>
+                <img src="{{ url_for('static', filename='images/team/' ~ member.image) }}"
+                     width="80" class="rounded mt-1">
+            {% endif %}
+        </div>
+
+        <hr>
+
+        <h5 class="mb-3">Redes Sociales <small class="text-muted">(opcionales)</small></h5>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Instagram</label>
+                <input type="url" name="instagram" class="form-control"
+                       value="{{ member.instagram if member else '' }}"
+                       placeholder="https://instagram.com/usuario">
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Facebook</label>
+                <input type="url" name="facebook" class="form-control"
+                       value="{{ member.facebook if member else '' }}"
+                       placeholder="https://facebook.com/usuario">
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">TikTok</label>
+                <input type="url" name="tiktok" class="form-control"
+                       value="{{ member.tiktok if member else '' }}"
+                       placeholder="https://tiktok.com/@usuario">
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">WhatsApp</label>
+                <input type="tel" name="whatsapp" class="form-control"
+                       value="{{ member.whatsapp if member else '' }}"
+                       placeholder="Ej: +51988599481">
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Orden de visualización <span class="text-danger">*</span></label>
+                <input type="number" name="order" class="form-control"
+                       value="{{ member.order if member else 0 }}"
+                       min="0"
+                       step="1"
+                       required>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Estado <span class="text-danger">*</span></label>
+                <select name="active" class="form-select" required>
+                    <option value="" disabled {% if not member %}selected{% endif %}>
+                        Seleccione estado
+                    </option>
+                    <option value="1" {% if member and member.active %}selected{% endif %}>
+                        Activo
+                    </option>
+                    <option value="0" {% if member and not member.active %}selected{% endif %}>
+                        Inactivo
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{{ url_for('admin_team.list_team') }}" class="btn btn-secondary">
+                Cancelar
+            </a>
+
+            <button type="submit" class="btn btn-primary">
+                {{ "Actualizar" if member else "Guardar Miembro" }}
+            </button>
+        </div>
+
+    </div>
+
+</form>
+
+{% endblock %}

@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Estadísticas{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        border: none;
+    }
+    .order-toggle {
+        cursor: pointer;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #0d6efd;
+        user-select: none;
+        transition: color 0.2s;
+    }
+    .order-toggle:hover { color: #0056b3; }
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+    .form-select-sm, .form-control-sm {
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content_wrapper %}
+<div class="container py-4">
+
+    <h2 class="mb-4">Estadísticas</h2>
+
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm mb-3">Volver</a>
+
+    <div class="row">
+
+        <div class="col-md-12 mb-4">
+            <div class="card p-4">
+                <h5 class="section-title">Visitas totales</h5>
+                <form id="visitsForm" class="d-flex justify-content-between mb-4 flex-wrap gap-2 align-items-center">
+                    <div class="d-flex gap-2 flex-wrap align-items-center">
+                        <select name="visits_mode" class="form-select form-select-sm mode-select">
+                            <option value="range" {{ 'selected' if visits_mode == 'range' }}>Rango</option>
+                            <option value="day" {{ 'selected' if visits_mode == 'day' }}>Día</option>
+                            <option value="week" {{ 'selected' if visits_mode == 'week' }}>Semana</option>
+                            <option value="month" {{ 'selected' if visits_mode == 'month' }}>Mes</option>
+                        </select>
+                        <input type="date" name="visits_single_date" value="{{ visits_single_date }}" class="form-control form-select-sm single-date">
+                        <input type="month" name="visits_month" value="{{ visits_month }}" class="form-control form-select-sm month-input">
+                        <input type="date" name="visits_start_date" value="{{ visits_start_date }}" class="form-control form-select-sm range-start">
+                        <input type="date" name="visits_end_date" value="{{ visits_end_date }}" class="form-control form-select-sm range-end">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">OK</button>
+                </form>
+                <canvas id="visitsChart"></canvas>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card p-4">
+                <h5 class="section-title">Cursos más vistos</h5>
+                <form id="coursesForm" class="mb-3">
+                    <div class="d-flex justify-content-between mb-3 flex-wrap gap-2 align-items-center">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <select name="courses_mode" class="form-select form-select-sm mode-select">
+                                <option value="range" {{ 'selected' if courses_mode == 'range' }}>Rango</option>
+                                <option value="day" {{ 'selected' if courses_mode == 'day' }}>Día</option>
+                                <option value="week" {{ 'selected' if courses_mode == 'week' }}>Semana</option>
+                                <option value="month" {{ 'selected' if courses_mode == 'month' }}>Mes</option>
+                            </select>
+                            <input type="date" name="courses_single_date" value="{{ courses_single_date }}" class="form-control form-select-sm single-date">
+                            <input type="month" name="courses_month" value="{{ courses_month }}" class="form-control form-select-sm month-input">
+                            <input type="date" name="courses_start_date" value="{{ courses_start_date }}" class="form-control form-select-sm range-start">
+                            <input type="date" name="courses_end_date" value="{{ courses_end_date }}" class="form-control form-select-sm range-end">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">OK</button>
+                    </div>
+                    <div class="mb-3">
+                        <span class="order-toggle" id="coursesLabel" onclick="toggleOrder('courses')">
+                            Vistas {% if courses_order == 'desc' %}↓{% else %}↑{% endif %}
+                        </span>
+                    </div>
+                    <input type="hidden" name="courses_order" id="courses_order" value="{{ courses_order }}">
+                    <canvas id="coursesChart"></canvas>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card p-4">
+                <h5 class="section-title">Servicios más consultados</h5>
+                <form id="servicesForm" class="mb-3">
+                    <div class="d-flex justify-content-between mb-3 flex-wrap gap-2 align-items-center">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <select name="services_mode" class="form-select form-select-sm mode-select">
+                                <option value="range" {{ 'selected' if services_mode == 'range' }}>Rango</option>
+                                <option value="day" {{ 'selected' if services_mode == 'day' }}>Día</option>
+                                <option value="week" {{ 'selected' if services_mode == 'week' }}>Semana</option>
+                                <option value="month" {{ 'selected' if services_mode == 'month' }}>Mes</option>
+                            </select>
+                            <input type="date" name="services_single_date" value="{{ services_single_date }}" class="form-control form-select-sm single-date">
+                            <input type="month" name="services_month" value="{{ services_month }}" class="form-control form-select-sm month-input">
+                            <input type="date" name="services_start_date" value="{{ services_start_date }}" class="form-control form-select-sm range-start">
+                            <input type="date" name="services_end_date" value="{{ services_end_date }}" class="form-control form-select-sm range-end">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">OK</button>
+                    </div>
+                    <div class="mb-3">
+                        <span class="order-toggle" id="servicesLabel" onclick="toggleOrder('services')">
+                            Consultas {% if services_order == 'desc' %}↓{% else %}↑{% endif %}
+                        </span>
+                    </div>
+                    <input type="hidden" name="services_order" id="services_order" value="{{ services_order }}">
+                    <canvas id="servicesChart"></canvas>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let visitsChart, coursesChart, servicesChart;
+
+async function updateStats() {
+    const params = new URLSearchParams();
+    
+    // Recopilar datos de todos los formularios de forma limpia
+    document.querySelectorAll('form').forEach(form => {
+        const formData = new FormData(form);
+        for (const [key, value] of formData.entries()) {
+            params.set(key, value);
+        }
+    });
+
+    try {
+        const response = await fetch('/admin/stats?' + params.toString(), {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+
+        if (!response.ok) throw new Error('Error en la respuesta');
+        const data = await response.json();
+
+        updateChart('visitsChart', data.visits, 'Visitas', '#0d6efd', visitsChart);
+        updateChart('coursesChart', data.top_courses, 'Vistas', '#0d6efd', coursesChart);
+        updateChart('servicesChart', data.top_services, 'Consultas', '#0d6efd', servicesChart);
+
+        // Actualizar las flechas visuales
+        document.getElementById('coursesLabel').innerHTML = `Vistas ${document.getElementById('courses_order').value === 'desc' ? '↓' : '↑'}`;
+        document.getElementById('servicesLabel').innerHTML = `Consultas ${document.getElementById('services_order').value === 'desc' ? '↓' : '↑'}`;
+
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+function updateChart(canvasId, dataArray, label, color, existingChart) {
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext('2d');
+    const labels = dataArray.map(item => item[0]);
+    const values = dataArray.map(item => Math.max(0, Math.round(item[1] || 0)));
+
+    if (existingChart) existingChart.destroy();
+
+    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    const textColor = isDark ? '#adb5bd' : '#666';
+
+    const newChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: label,
+                data: values,
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                borderColor: color,
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: color,
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { color: textColor, precision: 0 }, grid: { color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' } },
+                x: { ticks: { color: textColor }, grid: { display: false } }
+            }
+        }
+    });
+
+    if (canvasId === 'visitsChart') visitsChart = newChart;
+    if (canvasId === 'coursesChart') coursesChart = newChart;
+    if (canvasId === 'servicesChart') servicesChart = newChart;
+}
+
+function toggleOrder(type) {
+    const input = document.getElementById(type + '_order');
+    input.value = input.value === 'desc' ? 'asc' : 'desc';
+    updateStats();
+}
+
+document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', (e) => { e.preventDefault(); updateStats(); });
+    const modeSelect = form.querySelector('.mode-select');
+    if (modeSelect) modeSelect.addEventListener('change', updateVisibility);
+});
+
+function updateVisibility() {
+    document.querySelectorAll('form').forEach(form => {
+        const mode = form.querySelector('.mode-select')?.value;
+        const single = form.querySelector('.single-date');
+        const month = form.querySelector('.month-input');
+        const start = form.querySelector('.range-start');
+        const end = form.querySelector('.range-end');
+
+        if (single) single.style.display = (mode === 'day' || mode === 'week') ? 'block' : 'none';
+        if (month) month.style.display = mode === 'month' ? 'block' : 'none';
+        if (start) start.style.display = end.style.display = mode === 'range' ? 'block' : 'none';
+    });
+}
+
+updateVisibility();
+document.addEventListener('DOMContentLoaded', updateStats);
+</script>
+{% endblock %}

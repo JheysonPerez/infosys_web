@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ "Editar Curso" if course else "Nuevo Curso" }} | Info & Sys
+{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">
+    {{ "Editar Curso / Capacitación" if course else "Registrar Nuevo Curso / Capacitación" }}
+</h2>
+
+<form method="post" enctype="multipart/form-data">
+
+    <div class="card p-4 shadow-sm">
+
+        <div class="mb-3">
+            <label class="form-label">Título del curso <span class="text-danger">*</span></label>
+            <input type="text" name="title" class="form-control"
+                   value="{{ course.title if course else '' }}"
+                   required
+                   placeholder="Ej: Capacitación en Gestión Pública 2026"
+                   minlength="5">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Descripción <span class="text-danger">*</span></label>
+            <textarea name="description" rows="5" class="form-control"
+                      required
+                      minlength="30"
+                      placeholder="Descripción completa del curso, objetivos, público objetivo, etc.">{{ course.description if course else '' }}</textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Categoría <span class="text-danger">*</span></label>
+            <input type="text" name="category" class="form-control"
+                   list="categorias_cursos"
+                   value="{{ course.category if course else '' }}"
+                   required
+                   placeholder="Ej: Gestión Pública, Contrataciones, Ofimática">
+            
+            <datalist id="categorias_cursos">
+                {% for cat in categorias %}
+                    <option value="{{ cat }}"></option>
+                {% endfor %}
+            </datalist>
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Nivel</label>
+
+                <select name="level" class="form-select">
+
+                    <option value="">Seleccionar nivel</option>
+
+                    <option value="Basico"
+                        {% if course and course.level == "Basico" %}selected{% endif %}>
+                        Básico
+                    </option>
+
+                    <option value="Intermedio"
+                        {% if course and course.level == "Intermedio" %}selected{% endif %}>
+                        Intermedio
+                    </option>
+
+                    <option value="Avanzado"
+                        {% if course and course.level == "Avanzado" %}selected{% endif %}>
+                        Avanzado
+                    </option>
+
+                </select>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Modalidad</label>
+
+                <select name="modality" class="form-select">
+
+                    <option value="">Seleccionar modalidad</option>
+
+                    <option value="Presencial"
+                        {% if course and course.modality == "Presencial" %}selected{% endif %}>
+                        Presencial
+                    </option>
+
+                    <option value="Virtual"
+                        {% if course and course.modality == "Virtual" %}selected{% endif %}>
+                        Virtual
+                    </option>
+
+                    <option value="Hibrida"
+                        {% if course and course.modality == "Hibrida" %}selected{% endif %}>
+                        Híbrida
+                    </option>
+
+                </select>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Duración (semanas)</label>
+                <input type="number" name="duration_weeks" class="form-control"
+                       min="1" step="1"
+                       value="{{ course.duration_weeks if course else '' }}"
+                       placeholder="Ej: 8">
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Horas estimadas</label>
+                <input type="number" name="estimated_hours" class="form-control"
+                       min="1" step="1"
+                       value="{{ course.estimated_hours if course else '' }}"
+                       placeholder="Ej: 40">
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Instructor </label>
+            <input type="text" name="instructor" class="form-control"
+                   value="{{ course.instructor if course else '' }}"
+                   placeholder="Ej: Mg. Juan Pérez">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Sílabo </label>
+            <textarea name="syllabus" rows="4" class="form-control"
+                      placeholder="Lista de temas o módulos del curso">{{ course.syllabus if course else '' }}</textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Información adicional</label>
+            <textarea name="additional_info" rows="3" class="form-control"
+                      placeholder="Certificación, requisitos, materiales incluidos, etc.">{{ course.additional_info if course else '' }}</textarea>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Precio (S/.)</label>
+                <input type="number" name="price" class="form-control"
+                       step="0.01" min="0"
+                       value="{{ course.price if course else '' }}"
+                       placeholder="Ej: 1200.00 o dejar vacío si es consultar">
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Estado <span class="text-danger">*</span></label>
+                <select name="status" class="form-select" required>
+                    <option value="" disabled {% if not course %}selected{% endif %}>
+                        Seleccione estado
+                    </option>
+                    <option value="activo" {{ 'selected' if course and course.status == 'activo' else '' }}>
+                        Activo
+                    </option>
+                    <option value="inactivo" {{ 'selected' if course and course.status == 'inactivo' else '' }}>
+                        Inactivo
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-check mb-4">
+            <input type="checkbox" name="featured" value="1" class="form-check-input" id="featured"
+                   {{ 'checked' if course and course.featured else '' }}>
+            <label class="form-check-label" for="featured">
+                Curso destacado 
+            </label>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Imagen del curso</label>
+
+            <input type="file" name="image" class="form-control" accept=".jpg,.jpeg,.png,.webp">
+
+            {% if course and course.image %}
+                <div class="mt-3">
+                    <p class="mb-1">Imagen actual:</p>
+                    <img src="{{ url_for('static', filename='images/courses/' ~ course.image) }}"
+                         alt="Imagen del curso"
+                         class="img-fluid rounded shadow-sm"
+                         style="max-width: 200px;">
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{{ url_for('admin_courses.list_courses') }}" class="btn btn-secondary">
+                Cancelar
+            </a>
+
+            <button type="submit" class="btn btn-primary">
+                {{ "Actualizar Curso" if course else "Guardar Curso" }}
+            </button>
+        </div>
+
+    </div>
+
+</form>
+
+{% endblock %}

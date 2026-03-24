@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Servicios | Info & Sys{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Servicios</h2>
+
+    {% if is_admin %}
+        <a href="{{ url_for('admin_services.create_service') }}"
+           class="btn btn-success">
+           Nuevo Servicio
+        </a>
+    {% endif %}
+</div>
+
+<form method="get" class="row g-2 mb-4">
+
+    <div class="col-md-3">
+        <input type="text"
+               name="search"
+               class="form-control"
+               placeholder="Buscar servicio..."
+               value="{{ request.args.get('search','') }}">
+    </div>
+
+    <div class="col-md-3">
+        <select name="service_type" class="form-select">
+            <option value="">Todos los tipos</option>
+
+            {% for t in service_types %}
+                <option value="{{ t }}"
+                    {% if request.args.get('service_type') == t %}selected{% endif %}>
+                    {{ t }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select name="modality" class="form-select">
+            <option value="">Todas las modalidades</option>
+
+            {% for m in modalities %}
+                <option value="{{ m }}"
+                    {% if request.args.get('modality') == m %}selected{% endif %}>
+                    {{ m }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select name="duration" class="form-select">
+            <option value="">Todas las duraciones</option>
+
+            {% for d in duration_ranges %}
+                <option value="{{ d }}"
+                    {% if request.args.get('duration') == d %}selected{% endif %}>
+                    {{ d }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100">
+            Filtrar
+        </button>
+    </div>
+
+</form>
+
+{% if services %}
+
+    {% set tipos = services 
+        | map(attribute="service_type") 
+        | unique 
+        | sort 
+        | list 
+    %}
+
+    {% for tipo in tipos %}
+        <h3 class="mt-5 border-bottom pb-2">{{ tipo }}</h3>
+
+        <div class="row mt-3 g-4">
+
+            {% set servicios_por_tipo = services 
+                | selectattr("service_type", "equalto", tipo) 
+                | list 
+            %}
+
+            {% for service in servicios_por_tipo %}
+
+                {% if is_admin or service.status == 'activo' %}
+
+                    <div class="col-md-4">
+
+                        <div class="card h-100 shadow-sm rounded-3 overflow-hidden">
+
+                            {% if service.image %}
+                                <img src="{{ url_for('static', filename='images/services/' ~ service.image) }}"
+                                     class="card-img-top"
+                                     style="height: 180px; object-fit: cover;">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/logo.png') }}"
+                                     class="card-img-top"
+                                     style="height: 180px; object-fit: cover;">
+                            {% endif %}
+
+                            <div class="card-body d-flex flex-column">
+
+                                <div class="d-flex justify-content-between mb-2">
+                                    <h5 class="card-title mb-0">{{ service.name }}</h5>
+
+                                    <div class="d-flex gap-2">
+                                        {% if service.featured %}
+                                            <span class="badge bg-primary">Destacado</span>
+                                        {% endif %}
+
+                                        {% if is_admin and service.status == 'inactivo' %}
+                                            <span class="badge bg-danger">Inactivo</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <p class="text-muted flex-grow-1">
+                                    {{ service.description | truncate(120) }}
+                                </p>
+
+                                <ul class="list-unstyled small text-muted mb-3">
+                                    {% if service.delivery_mode %}
+                                        <li><strong>Modalidad:</strong> {{ service.delivery_mode }}</li>
+                                    {% endif %}
+
+                                    {% if service.estimated_duration %}
+                                        <li><strong>Duración:</strong> {{ service.estimated_duration }}</li>
+                                    {% endif %}
+
+                                    <li>
+                                        <strong>Precio:</strong>
+                                        {% if service.price %}
+                                            S/ {{ service.price }}
+                                        {% else %}
+                                            Consultar
+                                        {% endif %}
+                                    </li>
+                                </ul>
+
+                                <a href="{{ url_for('services.service_detail', service_id=service.id) }}"
+                                   class="btn btn-sm btn-outline-primary mt-auto">
+                                    Más información
+                                </a>
+
+                                {% if is_admin %}
+                                    <div class="mt-3 d-flex gap-2">
+                                        <a href="{{ url_for('admin_services.edit_service', service_id=service.id) }}"
+                                           class="btn btn-sm btn-warning">
+                                           Editar
+                                        </a>
+
+                                        <form action="{{ url_for('admin_services.delete_service', service_id=service.id) }}"
+                                              method="post"
+                                              onsubmit="return confirm('¿Eliminar servicio?');">
+                                            <button class="btn btn-sm btn-danger">
+                                                Eliminar
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
+    {% endfor %}
+
+{% else %}
+
+    <div class="alert alert-light text-center py-5 border">
+        No hay servicios registrados.
+    </div>
+
+{% endif %}
+
+{% endblock %}

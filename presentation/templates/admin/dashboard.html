@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Panel Administrativo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/perfil.css') }}">
+{% endblock %}
+
+{% block content_wrapper %}
+<div class="body-perfil">
+
+    <div class="perfil-box">
+
+        {% if user.picture %}
+            <img class="perfil" src="{{ user.picture }}" alt="Foto de perfil de {{ user.name }}">
+        {% else %}
+            <img class="perfil" src="{{ url_for('static', filename='default-profile.png') }}">
+        {% endif %}
+
+        <h2>Panel Administrativo</h2>
+
+        <p><strong>Nombre:</strong> {{ user.name }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+
+        <div class="d-flex justify-content-center align-items-center mt-3">
+            <a href="{{ url_for('admin.stats') }}">Ver estadísticas</a>
+            <a href="/logout">Cerrar sesión</a>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

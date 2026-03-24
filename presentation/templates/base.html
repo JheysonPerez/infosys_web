@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Info & Sys Corporation{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Info & Sys Corporation" height="50">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_team.list_team') if is_admin else url_for('about.about_page') }}">Quiénes Somos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_services.list_services') if is_admin else '/services' }}">Servicios</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_courses.list_courses') if is_admin else url_for('courses.list_courses') }}">Cursos y Capacitaciones</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/contact">Contacto</a>
+                </li>
+
+                {% if is_admin %}
+                <li class="nav-item ms-lg-2">
+                    <a class="btn btn-outline-dark fw-bold px-3" href="{{ url_for('admin.dashboard') }}" style="border-radius: 20px; border-width: 2px; font-size: 0.9rem;">
+                        <i class="bi bi-shield-lock-fill me-1"></i> Panel Administrativo
+                    </a>
+                </li>
+                {% endif %}
+
+                <li class="nav-item ms-3">
+                    <button id="darkModeToggle" class="btn btn-light btn-sm">🌙</button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- 🔥 AQUÍ ESTÁ LA SOLUCIÓN -->
+<main class="flex-fill mb-5">
+    {% block content_wrapper %}
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    {% endblock %}
+</main>
+
+<footer class="bg-primary text-white mt-auto pt-4 pb-3 border-top">
+    <div class="container">
+        <div class="row text-center text-md-start">
+
+            <div class="col-md-4 mb-3">
+                <h6 class="fw-bold fs-5 text-white">
+                    <i class="bi bi-building"></i> INFO & SYS CORPORATION E.I.R.L.
+                </h6>
+                <p class="mb-1 fs-6 text-light">
+                    <i class="bi bi-file-earmark-text"></i> N° Partida: 11069826
+                </p>
+                <p class="mb-1 fs-6 text-light">
+                    <i class="bi bi-credit-card-2-front"></i> RUC:
+                    <a class="text-white" href="https://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias" target="_blank">
+                        20611770937
+                    </a>
+                </p>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <h6 class="fw-bold fs-5 text-white">
+                    <i class="bi bi-geo-alt"></i> UBICACIÓN
+                </h6>
+                <p class="mb-1 fs-6 text-light">
+                    <a class="text-white" href="https://www.google.com/maps/search/?api=1&query=PP.JJ.+Jesús+Alberto+Páez+Mz.+D+Lt.+10+Tingo+María" target="_blank">
+                        <i class="bi bi-house-door"></i> PP.JJ. Jesús Alberto Páez Mz. D Lt. 10
+                    </a>
+                </p>
+                <p class="mb-1 fs-6 text-light">
+                    <i class="bi bi-geo-alt-fill"></i> Tingo María
+                </p>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <h6 class="fw-bold fs-5 text-white">
+                    <i class="bi bi-envelope"></i> CONTACTO
+                </h6>
+                <p class="mb-1 fs-6 text-light">
+                    <i class="bi bi-envelope-fill"></i> E-mail:
+                    <a class="text-white" href="mailto:infoysys@gmail.com">infoysys@gmail.com</a>
+                </p>
+                <p class="mb-1 fs-6 text-light">
+                    <i class="bi bi-whatsapp"></i> WhatsApp:
+                    <a class="text-white" href="https://wa.me/51988599481" target="_blank">
+                        927 282 295
+                    </a>
+                </p>
+            </div>
+
+        </div>
+
+        <div class="text-center mt-3">
+            <small class="fs-7 text-light">
+                <i class="bi bi-c-circle"></i> 2026 Info & Sys Corporation · Todos los derechos reservados
+            </small>
+        </div>
+    </div>
+</footer>
+
+<a href="https://wa.me/51927282295?text=Hola%2C+quiero+informaci%C3%B3n+sobre" 
+   target="_blank" 
+   class="whatsapp-button" 
+   title="Escríbenos por WhatsApp">
+    <i class="bi bi-whatsapp"></i>
+</a>
+
+<style>
+.whatsapp-button {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: linear-gradient(135deg, #25D366, #128C7E);
+    color: white;
+    font-size: 2.2rem;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+}
+.whatsapp-button:hover {
+    transform: scale(1.2);
+    box-shadow: 0 12px 20px rgba(0,0,0,0.4);
+    text-decoration: none;
+    color: white;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+const toggle = document.getElementById("darkModeToggle");
+const body = document.body;
+
+if(localStorage.getItem("dark-mode") === "enabled"){
+    body.classList.add("dark-mode");
+    toggle.textContent = "☀️";
+}
+
+toggle.addEventListener("click", () => {
+    body.classList.toggle("dark-mode");
+
+    if(body.classList.contains("dark-mode")){
+        localStorage.setItem("dark-mode","enabled");
+        toggle.textContent = "☀️";
+    }else{
+        localStorage.setItem("dark-mode","disabled");
+        toggle.textContent = "🌙";
+    }
+});
+</script>
+
+</body>
+</html>

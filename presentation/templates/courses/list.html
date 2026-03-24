@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Cursos y Capacitaciones | Info & Sys
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <h2 class="mb-0">Cursos y Capacitaciones</h2>
+
+    {% if is_admin %}
+        <a href="{{ url_for('admin_courses.create_course') }}"
+           class="btn btn-success">
+            Nuevo Curso / Capacitación
+        </a>
+    {% endif %}
+
+</div>
+
+<form method="get" class="row g-2 mb-4">
+
+    <div class="col-md-3">
+        <input
+            type="text"
+            name="search"
+            class="form-control"
+            placeholder="Buscar curso..."
+            value="{{ request.args.get('search','') }}"
+        >
+    </div>
+
+    {% set categorias_select = courses | map(attribute="category") | unique | sort | list %}
+
+    <div class="col-md-2">
+        <select name="category" class="form-select">
+            <option value="">Todas las categorías</option>
+            {% for cat in categorias_select %}
+                <option value="{{ cat }}"
+                        {% if request.args.get('category') == cat %}selected{% endif %}>
+                    {{ cat }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select name="modality" class="form-select">
+            <option value="">Todas las modalidades</option>
+            {% for m in ["Virtual","Presencial","Híbrida"] %}
+                <option value="{{ m }}"
+                        {% if request.args.get('modality') == m %}selected{% endif %}>
+                    {{ m }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select name="level" class="form-select">
+            <option value="">Todos los niveles</option>
+            {% for l in ["Basico","Intermedio","Avanzado"] %}
+                <option value="{{ l }}"
+                        {% if request.args.get('level') == l %}selected{% endif %}>
+                    {{ l }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select name="duration" class="form-select">
+            <option value="">Todas las duraciones</option>
+
+            {% if duration_ranges %}
+                {% for start,end in duration_ranges %}
+                    <option value="{{ start }}-{{ end }}"
+                            {% if request.args.get('duration') == start ~ '-' ~ end %}selected{% endif %}>
+                        {{ start }} - {{ end }} semanas
+                    </option>
+                {% endfor %}
+            {% endif %}
+        </select>
+    </div>
+
+    <div class="col-md-1">
+        <button class="btn btn-primary w-100">
+            Filtrar
+        </button>
+    </div>
+
+</form>
+
+{% if courses %}
+
+    {% set categorias = courses | map(attribute="category") | unique | sort | list %}
+
+    {% for categoria in categorias %}
+
+        <h3 class="mt-5 border-bottom pb-2">
+            {{ categoria or "Sin categoría" }}
+        </h3>
+
+        <div class="row mt-3 g-4">
+
+            {% for course in courses %}
+
+                {% if course.category == categoria and (is_admin or course.status == 'activo') %}
+
+                    <div class="col-md-4">
+
+                        <div class="card h-100 shadow-sm">
+
+                            {% if course.image %}
+                                <img src="{{ url_for('static', filename='images/courses/' ~ course.image) }}"
+                                     class="card-img-top"
+                                     style="height:200px; object-fit:cover;">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/logo.png') }}"
+                                     class="card-img-top"
+                                     style="height:200px; object-fit:cover;">
+                            {% endif %}
+
+                            <div class="card-body d-flex flex-column">
+
+                                <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+
+                                    <h5 class="card-title mb-0">
+                                        {{ course.title }}
+                                    </h5>
+
+                                    <div class="d-flex gap-2">
+
+                                        {% if course.featured %}
+                                            <span class="badge bg-primary">
+                                                Destacado
+                                            </span>
+                                        {% endif %}
+
+                                        {% if is_admin and course.status == 'inactivo' %}
+                                            <span class="badge bg-danger">
+                                                Inactivo
+                                            </span>
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                                <p class="card-text text-muted flex-grow-1">
+                                    {{ course.description or "Sin descripción disponible." | truncate(120) }}
+                                </p>
+
+                                {% if course.instructor %}
+                                    <p class="text-muted small mb-2">
+                                        <strong>Instructor:</strong> {{ course.instructor }}
+                                    </p>
+                                {% endif %}
+
+                                {% if course.modality or course.level %}
+                                    <p class="text-muted small mb-2">
+                                        {% if course.modality %}
+                                            <strong>Modalidad:</strong> {{ course.modality }}
+                                        {% endif %}
+                                        {% if course.level %}
+                                            {% if course.modality %} | {% endif %}
+                                            <strong>Nivel:</strong> {{ course.level }}
+                                        {% endif %}
+                                    </p>
+                                {% endif %}
+
+                                {% if course.duration_weeks or course.estimated_hours %}
+                                    <p class="text-muted small mb-2">
+                                        <strong>Duración:</strong>
+                                        {% if course.duration_weeks %}
+                                            {{ course.duration_weeks }} semanas
+                                        {% endif %}
+                                        {% if course.estimated_hours %}
+                                            · {{ course.estimated_hours }} horas
+                                        {% endif %}
+                                    </p>
+                                {% endif %}
+
+                                <p class="text-muted small mb-2">
+                                    <strong>Precio:</strong>
+                                    {% if course.price %}
+                                        S/ {{ "%.2f"|format(course.price) }}
+                                    {% else %}
+                                        Gratis
+                                    {% endif %}
+                                </p>
+
+                                <a href="{{ url_for('courses.course_detail', course_id=course.id) }}"
+                                   class="btn btn-sm btn-outline-primary mt-auto align-self-start">
+                                    Más información
+                                </a>
+
+                                {% if is_admin %}
+                                    <div class="mt-3 d-flex gap-2 flex-wrap">
+
+                                        <a href="{{ url_for('admin_courses.edit_course', course_id=course.id) }}"
+                                           class="btn btn-sm btn-warning">
+                                            Editar
+                                        </a>
+
+                                        <form action="{{ url_for('admin_courses.delete_course', course_id=course.id) }}"
+                                              method="post"
+                                              onsubmit="return confirm('¿Seguro que deseas eliminar este curso?');">
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-danger">
+                                                Eliminar
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
+
+    {% endfor %}
+
+{% else %}
+
+    <div class="alert alert-light text-center py-5 border">
+        No hay cursos registrados todavía.
+    </div>
+
+{% endif %}
+
+{% endblock %}
