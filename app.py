@@ -27,6 +27,7 @@ from presentation.routes.public.auth_routes import auth_bp, oauth
 from presentation.routes.private.admin_routes import admin_bp
 from presentation.routes.private.admin_services_routes import admin_services_bp
 
+
 def create_app():
     base_dir = os.path.abspath(os.path.dirname(__file__))
 
@@ -37,6 +38,14 @@ def create_app():
     )
 
     app.config.from_object(Config)
+
+    database_url = os.getenv("DATABASE_URL")
+    if database_url:
+        if database_url.startswith("postgres://"):
+            database_url = database_url.replace("postgres://", "postgresql://", 1)
+        app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "super_secret_key")
     app.config["SESSION_COOKIE_NAME"] = "infosys_session"
     app.config["SESSION_COOKIE_HTTPONLY"] = True
@@ -78,7 +87,9 @@ def create_app():
 
     return app
 
+
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
+    port = int(os.getenv("PORT", 5000))
+    app.run(debug=True, host="0.0.0.0", port=port)
