@@ -5,7 +5,7 @@ import os
 
 load_dotenv()
 
-from infosys_web.config import Config
+from config import Config
 from infosys_web.infrastructure.database.postgres import db
 from infosys_web.infrastructure.mail.smtp import mail
 from infosys_web.presentation.routes.public.home_routes import home_bp
