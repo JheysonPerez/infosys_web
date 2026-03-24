@@ -1,24 +1,25 @@
-from flask import Flask
+from flask import Flask, session
 from dotenv import load_dotenv
-from flask import session
 import os
 
 load_dotenv()
 
 from config import Config
-from infosys_web.infrastructure.database.postgres import db
-from infosys_web.infrastructure.mail.smtp import mail
-from infosys_web.presentation.routes.public.home_routes import home_bp
-from infosys_web.presentation.routes.private.admin_team_routes import admin_team_bp
-from infosys_web.presentation.routes.private.admin_news_routes import admin_news_bp
-from infosys_web.presentation.routes.public.course_routes import course_bp
-from infosys_web.presentation.routes.private.admin_courses_routes import admin_courses_bp
-from infosys_web.presentation.routes.public.services_routes import services_bp
-from infosys_web.presentation.routes.public.about_routes import about_bp
-from infosys_web.presentation.routes.public.contact_routes import contact_bp
-from infosys_web.presentation.routes.public.auth_routes import auth_bp, oauth
-from infosys_web.presentation.routes.private.admin_routes import admin_bp
-from infosys_web.presentation.routes.private.admin_services_routes import admin_services_bp
+from infrastructure.database.postgres import db
+from infrastructure.mail.smtp import mail
+
+from presentation.routes.public.home_routes import home_bp
+from presentation.routes.private.admin_team_routes import admin_team_bp
+from presentation.routes.private.admin_news_routes import admin_news_bp
+from presentation.routes.public.course_routes import course_bp
+from presentation.routes.private.admin_courses_routes import admin_courses_bp
+from presentation.routes.public.services_routes import services_bp
+from presentation.routes.public.about_routes import about_bp
+from presentation.routes.public.contact_routes import contact_bp
+from presentation.routes.public.auth_routes import auth_bp, oauth
+from presentation.routes.private.admin_routes import admin_bp
+from presentation.routes.private.admin_services_routes import admin_services_bp
+
 
 def create_app():
     base_dir = os.path.abspath(os.path.dirname(__file__))
