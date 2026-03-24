@@ -1,4 +1,4 @@
-from infosys_web.infrastructure.database.postgres import db
+from infrastructure.database.postgres import db
 from datetime import date
 
 class News(db.Model):

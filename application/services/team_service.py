@@ -1,15 +1,15 @@
 import re
-from infosys_web.infrastructure.database.postgres import db
-from infosys_web.domain.models.team_member import TeamMember
+from infrastructure.database.postgres import db
+from domain.models.team_member import TeamMember
 
 class TeamService:
-    # Obtener todos los miembros del equipo, ordenados por el campo "order"
+    # Obtener todos los miembros del equipo
     @staticmethod
     def get_all():
         # Todos los miembros, admin
         return TeamMember.query.order_by(TeamMember.order).all()
 
-    # Obtener solo miembros activos, ordenados por el campo "order"
+    # Obtener solo miembros activos
     @staticmethod
     def get_all_active():
         # Solo miembros activos, vista pública

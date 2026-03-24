@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, session
-from infosys_web.application.services.team_service import TeamService
+from application.services.team_service import TeamService
 
 about_bp = Blueprint("about", __name__)
 

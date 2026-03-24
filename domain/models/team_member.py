@@ -1,4 +1,4 @@
-from infosys_web.infrastructure.database.postgres import db
+from infrastructure.database.postgres import db
 
 class TeamMember(db.Model):
     __tablename__ = "team_members"

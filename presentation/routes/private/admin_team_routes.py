@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from werkzeug.utils import secure_filename
 import os
-from infosys_web.presentation.routes.private.admin_guard import admin_required
-from infosys_web.application.services.team_service import TeamService
+from presentation.routes.private.admin_guard import admin_required
+from application.services.team_service import TeamService
 
 admin_team_bp = Blueprint("admin_team", __name__, url_prefix="/admin/team")
 UPLOAD_FOLDER = "static/images/team"

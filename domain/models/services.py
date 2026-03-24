@@ -1,5 +1,4 @@
-from infosys_web.infrastructure.database.postgres import db
-
+from infrastructure.database.postgres import db
 
 class Service(db.Model):
     __tablename__ = "services"

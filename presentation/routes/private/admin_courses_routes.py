@@ -3,9 +3,9 @@ from werkzeug.utils import secure_filename
 import os
 import uuid
 
-from infosys_web.presentation.routes.private.admin_guard import admin_required
-from infosys_web.application.services.course_service import CourseService
-from infosys_web.presentation.routes.public.course_routes import generate_duration_ranges
+from presentation.routes.private.admin_guard import admin_required
+from application.services.course_service import CourseService
+from presentation.routes.public.course_routes import generate_duration_ranges
 
 admin_courses_bp = Blueprint(
     "admin_courses",

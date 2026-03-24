@@ -3,8 +3,8 @@ from werkzeug.utils import secure_filename
 import os
 import uuid
 
-from infosys_web.presentation.routes.private.admin_guard import admin_required
-from infosys_web.application.services.service_service import ServiceService
+from presentation.routes.private.admin_guard import admin_required
+from application.services.service_service import ServiceService
 
 admin_services_bp = Blueprint(
     "admin_services",

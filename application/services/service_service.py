@@ -1,5 +1,5 @@
-from infosys_web.infrastructure.database.postgres import db
-from infosys_web.domain.models.services import Service
+from infrastructure.database.postgres import db
+from domain.models.services import Service
 
 
 class ServiceService:

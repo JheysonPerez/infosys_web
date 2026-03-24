@@ -1,7 +1,7 @@
-from infosys_web.infrastructure.database.postgres import db
-from infosys_web.domain.models.statistic import Statistic
-from infosys_web.domain.models.course import Course
-from infosys_web.domain.models.services import Service
+from infrastructure.database.postgres import db
+from domain.models.statistic import Statistic
+from domain.models.course import Course
+from domain.models.services import Service
 from sqlalchemy import func
 from datetime import datetime, timedelta
 

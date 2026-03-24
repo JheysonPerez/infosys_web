@@ -1,6 +1,6 @@
-from infosys_web.domain.models.contact_message import ContactMessage
-from infosys_web.infrastructure.database.postgres import db
-from infosys_web.infrastructure.mail.smtp import send_email
+from domain.models.contact_message import ContactMessage
+from infrastructure.database.postgres import db
+from infrastructure.mail.smtp import send_email
 import os
 
 def save_contact_message(name, email, phone, message):

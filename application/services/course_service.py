@@ -1,5 +1,5 @@
-from infosys_web.domain.models import Course
-from infosys_web.infrastructure.database.postgres import db
+from domain.models import Course
+from infrastructure.database.postgres import db
 
 # servicio para manejar cursos
 class CourseService:

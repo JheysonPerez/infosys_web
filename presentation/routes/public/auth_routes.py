@@ -2,8 +2,8 @@ from flask import Blueprint, redirect, session, url_for, request
 from authlib.integrations.flask_client import OAuth
 from uuid import uuid4
 
-from infosys_web.config import Config
-from infosys_web.application.services.auth_service import is_authorized_user
+from config import Config
+from application.services.auth_service import is_authorized_user
 
 auth_bp = Blueprint("auth", __name__)
 

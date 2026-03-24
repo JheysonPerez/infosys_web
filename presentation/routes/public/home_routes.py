@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, session
 from datetime import date
 
-from infosys_web.domain.models.services import Service
-from infosys_web.domain.models.news import News
-from infosys_web.domain.models.course import Course
-from infosys_web.application.services.statistic_service import StatisticService
+from domain.models.services import Service
+from domain.models.news import News
+from domain.models.course import Course
+from application.services.statistic_service import StatisticService
 
 home_bp = Blueprint("home", __name__)
 

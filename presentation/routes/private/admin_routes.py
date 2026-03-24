@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify
-from infosys_web.presentation.routes.private.admin_guard import admin_required
-from infosys_web.application.services.statistic_service import StatisticService
+from presentation.routes.private.admin_guard import admin_required
+from application.services.statistic_service import StatisticService
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 

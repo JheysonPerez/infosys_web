@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, session, request
-from infosys_web.application.services.service_service import ServiceService
-from infosys_web.application.services.statistic_service import StatisticService
+from application.services.service_service import ServiceService
+from application.services.statistic_service import StatisticService
 
 services_bp = Blueprint("services", __name__, url_prefix="/services")
 

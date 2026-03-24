@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from infosys_web.presentation.routes.private.admin_guard import admin_required
-from infosys_web.application.services.news_service import NewsService
+from presentation.routes.private.admin_guard import admin_required
+from application.services.news_service import NewsService
 
 admin_news_bp = Blueprint(
     "admin_news",

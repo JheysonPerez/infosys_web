@@ -1,5 +1,5 @@
-from infosys_web.infrastructure.database.postgres import db
-from infosys_web.domain.models.news import News
+from infrastructure.database.postgres import db
+from domain.models.news import News
 
 # Servicio para manejar noticias
 class NewsService:

@@ -1,7 +1,6 @@
-from infosys_web.app import app
-from infosys_web.infrastructure.database.postgres import db
-
-from infosys_web.domain.models import (
+from app import app
+from infrastructure.database.postgres import db
+from domain.models import (
     Course,
     Service,
     ContactMessage,

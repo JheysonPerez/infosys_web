@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from infosys_web.application.services.contact_services import save_contact_message
+from application.services.contact_services import save_contact_message
 
 contact_bp = Blueprint("contact", __name__, url_prefix="/contact") 
 
