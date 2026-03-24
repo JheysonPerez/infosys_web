@@ -3,10 +3,11 @@ import os
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "super_secret_key_fijo")
 
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        "DATABASE_URL",
-        "postgresql+psycopg2://infosys_user:infosys123@localhost:5432/infosys_db?client_encoding=utf8"
-    )
+    db_url = os.getenv("DATABASE_URL")
+    if db_url:
+        db_url = db_url.replace("postgres://", "postgresql+psycopg2://")
+
+    SQLALCHEMY_DATABASE_URI = db_url or "postgresql+psycopg2://infosys_user:infosys123@localhost:5432/infosys_db?client_encoding=utf8"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     MAIL_SERVER = "smtp.gmail.com"
@@ -21,5 +22,5 @@ class Config:
 
     SESSION_COOKIE_NAME = "infosys_session"
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SECURE = False  
+    SESSION_COOKIE_SECURE = False
     SESSION_COOKIE_SAMESITE = "Lax"
