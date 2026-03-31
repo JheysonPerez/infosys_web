@@ -94,16 +94,20 @@ class CourseService:
             syllabus=data.get("syllabus"),
             additional_info=data.get("additional_info"),
 
-            # FIX PRICE 
+            # precio
             price=float(data.get("price")) if data.get("price") else None,
 
-            # FIX FEATURED
+            # destacado
             featured=True if data.get("featured") else False,
 
+            # estado
             status=data.get("status", "activo"),
 
-            # GUARDAR IMAGEN
-            image=data.get("image")
+            # imagen del curso
+            image=data.get("image"),
+
+            # certificado
+            certificate_image=data.get("certificate_image")
         )
 
         db.session.add(course)
@@ -132,17 +136,22 @@ class CourseService:
         course.syllabus = data.get("syllabus", course.syllabus)
         course.additional_info = data.get("additional_info", course.additional_info)
 
-        # FIX PRICE
+        # precio
         course.price = float(data.get("price")) if data.get("price") else None
 
-        # FIX FEATURED
+        # destacado
         course.featured = True if data.get("featured") else False
 
+        # estado
         course.status = data.get("status", course.status)
 
-        # ACTUALIZAR IMAGEN SOLO SI VIENE NUEVA
+        # actualizar imagen solo si viene nueva
         if data.get("image"):
             course.image = data.get("image")
+
+        # actualizar certificado solo si viene nuevo
+        if data.get("certificate_image"):
+            course.certificate_image = data.get("certificate_image")
 
         db.session.commit()
         return course

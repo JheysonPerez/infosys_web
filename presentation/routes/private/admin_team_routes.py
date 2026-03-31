@@ -17,11 +17,10 @@ def save_image(file):
         return filename
     return None
 
-# LISTAR
 @admin_team_bp.route("/")
 @admin_required
 def list_team():
-    team = TeamService.get_all() 
+    team = TeamService.get_all()
     for member in team:
         member.socials = TeamService.build_social_links(member)
     return render_template(
@@ -30,7 +29,6 @@ def list_team():
         is_admin=True
     )
 
-# CREAR
 @admin_team_bp.route("/create", methods=["GET", "POST"])
 @admin_required
 def create_member():
@@ -45,7 +43,6 @@ def create_member():
         return redirect(url_for("admin_team.list_team"))
     return render_template("admin/team/form.html", member=None)
 
-# EDITAR
 @admin_team_bp.route("/edit/<int:member_id>", methods=["GET", "POST"])
 @admin_required
 def edit_member(member_id):
@@ -53,9 +50,12 @@ def edit_member(member_id):
     if request.method == "POST":
         data = request.form.to_dict()
         image_file = request.files.get("image")
-        filename = save_image(image_file)
-        if filename:
-            data["image"] = filename
+        if image_file and image_file.filename:
+            if member.image:
+                old_path = os.path.join(current_app.root_path, UPLOAD_FOLDER, member.image)
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+            data["image"] = save_image(image_file)
         else:
             data["image"] = member.image
         TeamService.update(member_id, data)
@@ -63,10 +63,14 @@ def edit_member(member_id):
         return redirect(url_for("admin_team.list_team"))
     return render_template("admin/team/form.html", member=member)
 
-# ELIMINAR
 @admin_team_bp.route("/delete/<int:member_id>", methods=["POST"])
 @admin_required
 def delete_member(member_id):
+    member = TeamService.get_by_id(member_id)
+    if member and member.image:
+        image_path = os.path.join(current_app.root_path, UPLOAD_FOLDER, member.image)
+        if os.path.exists(image_path):
+            os.remove(image_path)
     TeamService.delete(member_id)
     flash("Miembro eliminado", "success")
     return redirect(url_for("admin_team.list_team"))

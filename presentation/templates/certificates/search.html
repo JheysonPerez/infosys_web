@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Buscar Certificados</h2>
+
+<form method="GET" class="row g-2 mb-4">
+    <div class="col-md-5">
+        <input type="text" name="code" 
+               placeholder="Código del certificado" 
+               class="form-control" 
+               value="{{ request.args.get('code','') }}">
+    </div>
+
+    <div class="col-md-5">
+        <input type="text" name="dni" 
+               placeholder="DNI" 
+               class="form-control" 
+               value="{{ request.args.get('dni','') }}">
+    </div>
+
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100">Buscar</button>
+    </div>
+</form>
+
+{% if results %}
+    <div class="row g-4">
+        {% for cert in results %}
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title mb-2">{{ cert.student_name }}</h5>
+                        
+                        <p class="mb-1"><strong>DNI:</strong> {{ cert.student_dni }}</p>
+                        <p class="mb-1"><strong>Curso:</strong> {{ cert.course.title }}</p>
+                        <p class="mb-2"><strong>Código:</strong> {{ cert.code }}</p>
+
+                        {# Lógica de selección de imagen #}
+                        {% set image_to_show = cert.certificate_image or (cert.course.certificate_image if cert.course else None) %}
+
+                        {% if image_to_show %}
+                            {% if image_to_show.startswith('images/') %}
+                                {% set image_path = image_to_show %}
+                            {% else %}
+                                {% set image_path = 'images/certificates/' ~ image_to_show %}
+                            {% endif %}
+
+                            <div class="text-center mt-3">
+                                <img src="{{ url_for('static', filename=image_path) }}" 
+                                     class="img-fluid rounded shadow" 
+                                     style="max-width:100%; max-height:300px; object-fit:contain;">
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <a href="{{ url_for('static', filename=image_path) }}" 
+                                   download 
+                                   class="btn btn-success btn-sm">
+                                    Descargar certificado
+                                </a>
+                            </div>
+                        {% endif %}
+
+                        {# Sección exclusiva para administradores #}
+                        {% if is_admin %}
+                            <div class="mt-3 d-flex gap-2 flex-wrap">
+                                <a href="{{ url_for('admin_certificates.edit_certificate', cert_id=cert.id) }}" 
+                                   class="btn btn-sm btn-warning">
+                                    Editar
+                                </a>
+
+                                <form method="POST" 
+                                      action="{{ url_for('admin_certificates.delete_certificate', cert_id=cert.id) }}" 
+                                      onsubmit="return confirm('¿Eliminar certificado?');">
+                                    <button class="btn btn-sm btn-danger">Eliminar</button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% elif request.args %}
+    <div class="alert alert-danger text-center">
+        No se encontraron certificados.
+    </div>
+{% endif %}
+
+{% endblock %}

@@ -137,6 +137,22 @@
                       placeholder="Certificación, requisitos, materiales incluidos, etc.">{{ course.additional_info if course else '' }}</textarea>
         </div>
 
+        <div class="mb-3">
+            <label class="form-label">Plantilla de certificado</label>
+
+            <input type="file" name="certificate_image" class="form-control" accept=".jpg,.jpeg,.png,.webp">
+
+            {% if course and course.certificate_image %}
+                <div class="mt-3">
+                    <p class="mb-1">Certificado actual:</p>
+                    <img src="{{ url_for('static', filename=course.certificate_image) }}"
+                         alt="Certificado"
+                         class="img-fluid rounded shadow-sm"
+                         style="max-width: 300px;">
+                </div>
+            {% endif %}
+        </div>
+
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label class="form-label">Precio (S/.)</label>

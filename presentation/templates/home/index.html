@@ -5,13 +5,12 @@
 {% block content %}
 
 <section class="text-center mb-5 welcome-section">
-
     <h1 class="welcome-title">
         Bienvenido a Info & Sys Corporation
     </h1>
-
 </section>
 
+<!-- Servicios Destacados -->
 <section class="mb-5">
     <h3 class="mb-4">Servicios Destacados</h3>
 
@@ -36,11 +35,9 @@
                             <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
                                 <h5 class="card-title mb-0">{{ service.name }}</h5>
 
-                                <div class="d-flex gap-2">
-                                    {% if service.featured %}
-                                        <span class="badge bg-primary">Destacado</span>
-                                    {% endif %}
-                                </div>
+                                {% if service.featured %}
+                                    <span class="badge bg-primary">Destacado</span>
+                                {% endif %}
                             </div>
 
                             <p class="text-muted flex-grow-1">
@@ -62,6 +59,7 @@
     {% endif %}
 </section>
 
+<!-- Cursos Destacados -->
 <section class="mb-5">
     <h3 class="mb-4">Cursos Destacados</h3>
 
@@ -86,11 +84,9 @@
                             <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
                                 <h5 class="card-title mb-0">{{ course.title }}</h5>
 
-                                <div class="d-flex gap-2">
-                                    {% if course.featured %}
-                                        <span class="badge bg-success">Destacado</span>
-                                    {% endif %}
-                                </div>
+                                {% if course.featured %}
+                                    <span class="badge bg-success">Destacado</span>
+                                {% endif %}
                             </div>
 
                             <p class="text-muted flex-grow-1">
@@ -112,7 +108,64 @@
     {% endif %}
 </section>
 
-<section>
+<!-- Certificaciones Destacadas -->
+<section class="mb-5">
+    <h3 class="mb-4">Certificaciones Destacadas</h3>
+
+    {% if certificates %}
+        <div class="row g-4">
+
+            {% for course in certificates %}
+                <div class="col-md-4">
+
+                    <div class="card shadow-sm border-0 overflow-hidden h-100">
+
+                        <img src="{{ url_for('static', filename=course.certificate_image) }}"
+                             class="card-img-top"
+                             style="height: 220px; object-fit: cover; cursor:pointer;"
+                             data-bs-toggle="modal"
+                             data-bs-target="#certModal{{ course.id }}">
+
+                        <div class="card-body text-center">
+                            <h6 class="mb-0">{{ course.title }}</h6>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="modal fade" id="certModal{{ course.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    Certificado - {{ course.title }}
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+
+                            <div class="modal-body text-center">
+                                <img src="{{ url_for('static', filename=course.certificate_image) }}"
+                                     class="img-fluid rounded shadow"
+                                     style="max-height: 80vh;">
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            {% endfor %}
+
+        </div>
+    {% else %}
+        <p class="text-muted">No hay certificados disponibles.</p>
+    {% endif %}
+</section>
+
+<!-- Noticias y Novedades -->
+<section class="mt-5">
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3>Noticias y Novedades</h3>
 
@@ -124,37 +177,168 @@
         {% endif %}
     </div>
 
-    <div class="list-group">
+    <div class="list-group shadow-sm">
+
         {% for item in news %}
-            <div class="list-group-item">
+        <div class="list-group-item">
 
-                <div class="d-flex justify-content-between">
-                    <h6>{{ item.title }}</h6>
+            <div class="row align-items-center">
 
-                    {% if is_admin %}
+                {% if item.image %}
+                <div class="col-md-3 mb-3 mb-md-0">
+
+                    <div class="news-image-wrapper"
+                         data-bs-toggle="modal"
+                         data-bs-target="#newsImageModal{{ item.id }}">
+
+                        <img src="{{ url_for('static', filename='images/news/' + item.image) }}"
+                             class="news-image">
+                    </div>
+
+                </div>
+                {% endif %}
+
+                <div class="{% if item.image %}col-md-9{% else %}col-md-12{% endif %}">
+
+                    <div class="d-flex justify-content-between align-items-start">
+
+                        <div>
+                            <h6 class="mb-1">
+                                {{ item.title }}
+
+                                {% if is_admin and item.featured %}
+                                <span class="badge bg-warning text-dark ms-2">
+                                    Destacada
+                                </span>
+                                {% endif %}
+                            </h6>
+
+                            <small class="text-muted">
+                                {{ item.published_at.strftime('%d/%m/%Y') if item.published_at else '' }}
+                            </small>
+                        </div>
+
+                        {% if is_admin %}
                         <div class="d-flex gap-2">
+
                             <a href="{{ url_for('admin_news.edit_news', news_id=item.id) }}"
-                               class="btn btn-warning btn-sm">Editar</a>
+                               class="btn btn-warning btn-sm">
+                               Editar
+                            </a>
 
                             <form method="post"
                                   action="{{ url_for('admin_news.delete_news', news_id=item.id) }}">
-                                <button class="btn btn-danger btn-sm">Eliminar</button>
+                                <button class="btn btn-danger btn-sm">
+                                    Eliminar
+                                </button>
                             </form>
+
                         </div>
-                    {% endif %}
+                        {% endif %}
+
+                    </div>
+
+                    <p class="text-muted mt-2 mb-0">
+                        {{ item.content | truncate(200) }}
+                    </p>
+
                 </div>
 
-                <p class="text-muted">{{ item.content | truncate(200) }}</p>
-
-                <small>
-                    {{ item.published_at.strftime('%d/%m/%Y') if item.published_at else '' }}
-                </small>
-
             </div>
+
+        </div>
+
+        {% if item.image %}
+        <div class="modal fade" id="newsImageModal{{ item.id }}" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ item.title }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body text-center">
+                        <img src="{{ url_for('static', filename='images/news/' + item.image) }}"
+                             class="img-fluid rounded shadow"
+                             style="max-height: 80vh;">
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         {% else %}
             <p class="text-muted">No hay noticias disponibles.</p>
         {% endfor %}
+
     </div>
+
 </section>
+
+<!-- MODAL NOTICIAS DESTACADAS -->
+{% if featured_news %}
+<div class="modal fade" id="newsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+
+      <div id="featuredNewsCarousel" class="carousel slide" data-bs-ride="carousel">
+
+        <div class="carousel-inner">
+
+          {% for item in featured_news %}
+          <div class="carousel-item {% if loop.first %}active{% endif %}">
+
+            {% if item.image %}
+            <img src="{{ url_for('static', filename='images/news/' + item.image) }}"
+                 class="d-block w-100">
+            {% endif %}
+
+            <div class="p-4 text-center">
+              <h4 class="fw-bold mb-2">{{ item.title }}</h4>
+
+              <p class="text-muted">
+                {{ item.content | truncate(200) }}
+              </p>
+
+              <button class="btn btn-success px-5"
+                      data-bs-dismiss="modal">
+                Entendido
+              </button>
+            </div>
+
+          </div>
+          {% endfor %}
+
+        </div>
+
+        <button class="carousel-control-prev"
+                type="button"
+                data-bs-target="#featuredNewsCarousel"
+                data-bs-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+        </button>
+
+        <button class="carousel-control-next"
+                type="button"
+                data-bs-target="#featuredNewsCarousel"
+                data-bs-slide="next">
+          <span class="carousel-control-next-icon"></span>
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    var modal = new bootstrap.Modal(document.getElementById('newsModal'));
+    modal.show();
+});
+</script>
+{% endif %}
 
 {% endblock %}
