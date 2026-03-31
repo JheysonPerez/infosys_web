@@ -9,3 +9,5 @@ class News(db.Model):
     content = db.Column(db.Text, nullable=False)
     published_at = db.Column(db.Date, default=date.today)
     expires_at = db.Column(db.Date, nullable=True)
+    image = db.Column(db.String(255), nullable=True)
+    featured = db.Column(db.Boolean, default=False)

@@ -10,7 +10,7 @@
     {{ "Editar Noticia" if news else "Registrar Nueva Noticia" }}
 </h2>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
 
     <div class="card p-4 shadow-sm">
 
@@ -54,8 +54,33 @@
             </div>
         </div>
 
+        <div class="mb-3">
+            <label class="form-label">Imagen</label>
+            <input type="file" name="image" class="form-control">
+
+            {% if news and news.image %}
+                <div class="mt-3">
+                    <img src="{{ url_for('static', filename='images/news/' + news.image) }}"
+                         class="img-fluid rounded shadow-sm"
+                         style="max-height: 200px;">
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-check mb-4">
+            <input class="form-check-input"
+                   type="checkbox"
+                   name="featured"
+                   id="featured"
+                   {% if news and news.featured %}checked{% endif %}>
+
+            <label class="form-check-label" for="featured">
+                Marcar como noticia destacada
+            </label>
+        </div>
+
         <div class="d-flex justify-content-between mt-4">
-            <a href="{{ url_for('admin_news.list_news') if is_admin else url_for('home.index') }}"
+            <a href="{{ url_for('home.index') }}"
                class="btn btn-secondary">
                 Cancelar
             </a>

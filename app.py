@@ -1,4 +1,4 @@
-from flask import Flask, session
+from flask import Flask, app, session
 from dotenv import load_dotenv
 import os
 
@@ -26,6 +26,8 @@ from presentation.routes.public.contact_routes import contact_bp
 from presentation.routes.public.auth_routes import auth_bp, oauth
 from presentation.routes.private.admin_routes import admin_bp
 from presentation.routes.private.admin_services_routes import admin_services_bp
+from presentation.routes.private.admin_certificates_routes import admin_cert_bp
+from presentation.routes.public.certificate_routes import cert_bp
 
 
 def create_app():
@@ -84,6 +86,8 @@ def create_app():
     app.register_blueprint(contact_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(admin_cert_bp)
+    app.register_blueprint(cert_bp)
 
     return app
 

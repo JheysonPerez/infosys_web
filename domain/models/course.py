@@ -17,4 +17,5 @@ class Course(db.Model):
     price = db.Column(db.Numeric(10, 2))
     featured = db.Column(db.Boolean, default=False)
     status = db.Column(db.String(20), default="activo")
-    image = db.Column(db.String(255)) 
+    image = db.Column(db.String(255))
+    certificate_image = db.Column(db.String(255))
