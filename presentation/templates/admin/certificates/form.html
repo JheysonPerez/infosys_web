@@ -10,21 +10,19 @@
     {{ "Editar Certificado" if cert else "Generar Nuevo Certificado" }}
 </h2>
 
-<form method="POST" enctype="multipart/form-data">
+<form method="POST">
 
     <div class="card p-4 shadow-sm">
 
-        <!-- Nombre -->
         <div class="mb-3">
             <label class="form-label">
                 Nombre completo <span class="text-danger">*</span>
             </label>
-            <input type="text" name="student_name" class="form-control"
+            <input type="text" name="student_name" id="student_name" class="form-control"
                    value="{{ cert.student_name if cert else '' }}"
                    required minlength="5">
         </div>
 
-        <!-- DNI -->
         <div class="mb-3">
             <label class="form-label">
                 DNI <span class="text-danger">*</span>
@@ -35,7 +33,18 @@
                    pattern="[0-9]{8}">
         </div>
 
-        <!-- Curso -->
+        <div class="mb-3">
+            <label class="form-label">
+                Código del certificado <span class="text-danger">*</span>
+            </label>
+            <input type="text"
+                   name="code"
+                   id="code"
+                   class="form-control"
+                   value="{{ cert.code if cert else '' }}"
+                   required>
+        </div>
+
         <div class="mb-3">
             <label class="form-label">
                 Curso <span class="text-danger">*</span>
@@ -52,27 +61,41 @@
             </select>
         </div>
 
-        <!-- Vista previa del certificado -->
-        <div class="mb-3" id="previewContainer" style="display: {% if cert and cert.certificate_image %}block{% else %}none{% endif %};">
-            <p class="mb-1">Vista previa del certificado:</p>
+        <div class="mb-3">
+            <label class="form-label">
+                Fecha de inicio <span class="text-danger">*</span>
+            </label>
+            <input type="date" name="start_date" class="form-control"
+                   value="{{ cert.start_date if cert else '' }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">
+                Fecha de fin <span class="text-danger">*</span>
+            </label>
+            <input type="date" name="end_date" class="form-control"
+                   value="{{ cert.end_date if cert else '' }}" required>
+        </div>
+
+        <div class="mb-3" id="previewContainer" style="display:none;">
+            <p class="mb-1">Plantilla del certificado:</p>
             <img id="previewImage"
-                 src="{% if cert and cert.certificate_image %}{{ url_for('static', filename='images/certificates/' ~ cert.certificate_image) }}{% endif %}"
                  class="img-fluid rounded shadow-sm"
                  style="max-width:300px;">
         </div>
 
-        <!-- Código -->
-        {% if cert %}
         <div class="mb-3">
-            <label class="form-label">Código del certificado</label>
-            <input type="text"
-                class="form-control custom-readonly"
-                value="{{ cert.code }}"
-                readonly>
+            <button type="button" id="previewBtn" class="btn btn-info">
+                Vista previa 
+            </button>
         </div>
-        {% endif %}
 
-        <!-- Botones -->
+        <div class="mb-3" id="realPreviewContainer" style="display:none;">
+            <img id="realPreviewImage"
+                 class="img-fluid rounded shadow"
+                 style="max-width:100%;">
+        </div>
+
         <div class="d-flex justify-content-between mt-4">
             <a href="{{ url_for('admin_certificates.search_admin') }}" class="btn btn-secondary">
                 Cancelar
@@ -91,17 +114,44 @@ const courseSelect = document.getElementById('courseSelect');
 const previewContainer = document.getElementById('previewContainer');
 const previewImage = document.getElementById('previewImage');
 
+const previewBtn = document.getElementById('previewBtn');
+const realPreviewImage = document.getElementById('realPreviewImage');
+const realPreviewContainer = document.getElementById('realPreviewContainer');
+
 courseSelect.addEventListener('change', function() {
     const selectedOption = this.options[this.selectedIndex];
     const image = selectedOption.dataset.image;
 
-    if(image) {
+    if (image) {
         previewImage.src = "{{ url_for('static', filename='') }}" + image;
         previewContainer.style.display = 'block';
     } else {
         previewImage.src = '';
         previewContainer.style.display = 'none';
     }
+});
+
+previewBtn.addEventListener('click', function() {
+
+    const formData = new FormData(document.querySelector('form'));
+
+    fetch('/admin/certificates/preview', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => {
+        if (!res.ok) throw new Error();
+        return res.blob();
+    })
+    .then(blob => {
+        const url = URL.createObjectURL(blob);
+        realPreviewImage.src = url;
+        realPreviewContainer.style.display = 'block';
+    })
+    .catch(() => {
+        alert("Completa los campos para ver la vista previa");
+    });
+
 });
 </script>
 
