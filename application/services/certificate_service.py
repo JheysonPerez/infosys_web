@@ -23,7 +23,16 @@ def generate_certificate_image(cert):
     draw = ImageDraw.Draw(image)
 
     def load_font(size):
-        return ImageFont.truetype("arial.ttf", size)
+        try:
+            font_path = os.path.join(
+                current_app.root_path,
+                "static",
+                "fonts",
+                "DejaVuSans-Bold.ttf"
+            )
+            return ImageFont.truetype(font_path, size)
+        except:
+            return ImageFont.load_default()
 
     title_font = load_font(50)
     subtitle_font = load_font(28)
@@ -85,11 +94,7 @@ def generate_certificate_image(cert):
             )
 
             spaces = len(line_words) - 1
-            if spaces > 0:
-                total_space = max_width - words_width
-                space_width = total_space / spaces
-            else:
-                space_width = 0
+            space_width = (max_width - words_width) / spaces if spaces > 0 else 0
 
             current_x = x
 
