@@ -7,3 +7,4 @@ gunicorn
 authlib
 requests
 pillow
+qrcode[pil]
