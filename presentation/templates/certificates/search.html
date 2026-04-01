@@ -1,89 +1,133 @@
 {% extends "base.html" %}
 
 {% block content %}
+
 <h2 class="mb-4">Buscar Certificados</h2>
 
-<form method="GET" class="row g-2 mb-4">
+<form method="GET" class="row g-2 mb-4" id="searchForm">
+
     <div class="col-md-5">
-        <input type="text" name="code" 
-               placeholder="Código del certificado" 
-               class="form-control" 
-               value="{{ request.args.get('code','') }}">
+        <input type="text"
+               name="code"
+               id="codeInput"
+               placeholder="Código del certificado"
+               class="form-control"
+               value="{{ request.args.get('code','') }}"
+               autocomplete="off">
     </div>
 
     <div class="col-md-5">
-        <input type="text" name="dni" 
-               placeholder="DNI" 
-               class="form-control" 
-               value="{{ request.args.get('dni','') }}">
+        <input type="text"
+               name="dni"
+               id="dniInput"
+               placeholder="DNI"
+               class="form-control"
+               value="{{ request.args.get('dni','') }}"
+               maxlength="8"
+               pattern="[0-9]{8}"
+               inputmode="numeric">
     </div>
 
     <div class="col-md-2">
         <button class="btn btn-primary w-100">Buscar</button>
     </div>
+
 </form>
+
 
 {% if results %}
     <div class="row g-4">
+
         {% for cert in results %}
-            <div class="col-md-6">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title mb-2">{{ cert.student_name }}</h5>
-                        
-                        <p class="mb-1"><strong>DNI:</strong> {{ cert.student_dni }}</p>
-                        <p class="mb-1"><strong>Curso:</strong> {{ cert.course.title }}</p>
-                        <p class="mb-2"><strong>Código:</strong> {{ cert.code }}</p>
+        <div class="col-md-6">
 
-                        {# Lógica de selección de imagen #}
-                        {% set image_to_show = cert.certificate_image or (cert.course.certificate_image if cert.course else None) %}
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
 
-                        {% if image_to_show %}
-                            {% if image_to_show.startswith('images/') %}
-                                {% set image_path = image_to_show %}
-                            {% else %}
-                                {% set image_path = 'images/certificates/' ~ image_to_show %}
-                            {% endif %}
+                    <h5 class="card-title mb-2">{{ cert.student_name }}</h5>
 
-                            <div class="text-center mt-3">
-                                <img src="{{ url_for('static', filename=image_path) }}" 
-                                     class="img-fluid rounded shadow" 
-                                     style="max-width:100%; max-height:300px; object-fit:contain;">
-                            </div>
+                    <p class="mb-1"><strong>DNI:</strong> {{ cert.student_dni }}</p>
+                    <p class="mb-1">
+                        <strong>Curso:</strong>
+                        {{ cert.course.title if cert.course else "Curso eliminado" }}
+                    </p>
+                    <p class="mb-2"><strong>Código:</strong> {{ cert.code }}</p>
 
-                            <div class="text-center mt-3">
-                                <a href="{{ url_for('static', filename=image_path) }}" 
-                                   download 
-                                   class="btn btn-success btn-sm">
-                                    Descargar certificado
-                                </a>
-                            </div>
-                        {% endif %}
+                    {% if cert.certificate_image %}
 
-                        {# Sección exclusiva para administradores #}
-                        {% if is_admin %}
-                            <div class="mt-3 d-flex gap-2 flex-wrap">
-                                <a href="{{ url_for('admin_certificates.edit_certificate', cert_id=cert.id) }}" 
-                                   class="btn btn-sm btn-warning">
-                                    Editar
-                                </a>
+                        <div class="text-center mt-3">
+                            <img src="{{ url_for('static', filename=cert.certificate_image) }}"
+                                 class="img-fluid rounded shadow"
+                                 style="max-width:100%; max-height:300px; object-fit:contain;">
+                        </div>
 
-                                <form method="POST" 
-                                      action="{{ url_for('admin_certificates.delete_certificate', cert_id=cert.id) }}" 
-                                      onsubmit="return confirm('¿Eliminar certificado?');">
-                                    <button class="btn btn-sm btn-danger">Eliminar</button>
-                                </form>
-                            </div>
-                        {% endif %}
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('static', filename=cert.certificate_image) }}"
+                               download
+                               class="btn btn-success btn-sm">
+                                Descargar certificado
+                            </a>
+                        </div>
+
+                    {% endif %}
+
+                    {% if is_admin %}
+                    <div class="mt-3 d-flex gap-2 flex-wrap">
+
+                        <a href="{{ url_for('admin_certificates.edit_certificate', cert_id=cert.id) }}"
+                           class="btn btn-sm btn-warning">
+                            Editar
+                        </a>
+
+                        <form method="POST"
+                              action="{{ url_for('admin_certificates.delete_certificate', cert_id=cert.id) }}"
+                              onsubmit="return confirm('¿Eliminar certificado?');">
+
+                            <button class="btn btn-sm btn-danger">
+                                Eliminar
+                            </button>
+
+                        </form>
+
                     </div>
+                    {% endif %}
+
                 </div>
             </div>
+
+        </div>
         {% endfor %}
+
     </div>
+
+
 {% elif request.args %}
     <div class="alert alert-danger text-center">
         No se encontraron certificados.
     </div>
 {% endif %}
+
+
+
+<script>
+const codeInput = document.getElementById("codeInput");
+const dniInput = document.getElementById("dniInput");
+const form = document.getElementById("searchForm");
+
+codeInput.focus();
+
+codeInput.addEventListener("input", function() {
+    this.value = this.value.trimStart();
+});
+
+dniInput.addEventListener("input", function() {
+    this.value = this.value.replace(/[^0-9]/g, "");
+});
+
+form.addEventListener("submit", function() {
+    codeInput.value = codeInput.value.trim();
+    dniInput.value = dniInput.value.trim();
+});
+</script>
 
 {% endblock %}

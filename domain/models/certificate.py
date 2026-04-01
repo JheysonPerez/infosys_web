@@ -12,4 +12,7 @@ class Certificate(db.Model):
     code = db.Column(db.String(100), unique=True, nullable=False)
     certificate_image = db.Column(db.String(255))
     course = db.relationship("Course", backref="certificates")
-    
+    course_name = db.Column(db.String)
+    start_date = db.Column(db.Date)
+    end_date = db.Column(db.Date)
+    duration = db.Column(db.Integer)

@@ -64,7 +64,7 @@
     <div class="col-md-2">
         <select name="modality" class="form-select">
             <option value="">Todas las modalidades</option>
-            {% for m in ["Virtual","Presencial","Híbrida"] %}
+            {% for m in ["Virtual","Presencial","Híbrida", "Autoestudio"] %}
                 <option value="{{ m }}"
                         {% if request.args.get('modality') == m %}selected{% endif %}>
                     {{ m }}
