@@ -1,4 +1,5 @@
 import os
+import qrcode
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 from flask import current_app
@@ -128,7 +129,6 @@ def generate_certificate_image(cert):
     body_width = 800
 
     left_text("Otorgado a:", x_base, 220, subtitle_font)
-
     center_text(cert.student_name, 260, name_font)
 
     texto_completo = (
@@ -160,6 +160,16 @@ def generate_certificate_image(cert):
     y_codigo = y_fecha + 225
 
     draw.text((x_codigo, y_codigo), codigo_texto, fill="black", font=body_font)
+
+    qr_url = f"https://infosys-web.onrender.com/certificate/{cert.code}"
+
+    qr = qrcode.make(qr_url)
+    qr = qr.resize((150, 150))
+
+    qr_x = image.width - 180
+    qr_y = image.height - 200
+
+    image.paste(qr, (qr_x, qr_y))
 
     return image
 
