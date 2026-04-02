@@ -120,7 +120,7 @@
 
                     <div class="card shadow-sm border-0 overflow-hidden h-100">
 
-                        <img src="{{ url_for('static', filename=course.certificate_image) }}"
+                        <img src="{{ url_for('static', filename='images/certificates/' ~ course.certificate_image) }}"
                              class="card-img-top"
                              style="height: 220px; object-fit: cover; cursor:pointer;"
                              data-bs-toggle="modal"
@@ -146,7 +146,7 @@
                             </div>
 
                             <div class="modal-body text-center">
-                                <img src="{{ url_for('static', filename=course.certificate_image) }}"
+                                <img src="{{ url_for('static', filename='images/certificates/' ~ course.certificate_image) }}"
                                      class="img-fluid rounded shadow"
                                      style="max-height: 80vh;">
                             </div>
