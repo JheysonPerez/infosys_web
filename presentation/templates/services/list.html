@@ -100,9 +100,15 @@
                         <div class="card h-100 shadow-sm rounded-3 overflow-hidden">
 
                             {% if service.image %}
-                                <img src="{{ url_for('static', filename='images/services/' ~ service.image) }}"
-                                     class="card-img-top"
-                                     style="height: 180px; object-fit: cover;">
+                                {% if '/' in service.image %}
+                                    <img src="{{ url_for('static', filename='images/' + service.image) }}"
+                                         class="card-img-top"
+                                         style="height: 180px; object-fit: cover;">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='images/services/' + service.image) }}"
+                                         class="card-img-top"
+                                         style="height: 180px; object-fit: cover;">
+                                {% endif %}
                             {% else %}
                                 <img src="{{ url_for('static', filename='images/logo.png') }}"
                                      class="card-img-top"

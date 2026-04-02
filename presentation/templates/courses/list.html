@@ -129,9 +129,15 @@
                         <div class="card h-100 shadow-sm">
 
                             {% if course.image %}
-                                <img src="{{ url_for('static', filename='images/courses/' ~ course.image) }}"
-                                     class="card-img-top"
-                                     style="height:200px; object-fit:cover;">
+                                {% if '/' in course.image %}
+                                    <img src="{{ url_for('static', filename='images/' + course.image) }}"
+                                         class="card-img-top"
+                                         style="height:200px; object-fit:cover;">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='images/courses/' + course.image) }}"
+                                         class="card-img-top"
+                                         style="height:200px; object-fit:cover;">
+                                {% endif %}
                             {% else %}
                                 <img src="{{ url_for('static', filename='images/logo.png') }}"
                                      class="card-img-top"
@@ -265,8 +271,15 @@
                                 </div>
 
                                 <div class="modal-body text-center">
-                                    <img src="{{ url_for('static', filename=course.certificate_image) }}"
-                                         class="img-fluid rounded">
+
+                                    {% if '/' in course.certificate_image %}
+                                        <img src="{{ url_for('static', filename='images/' + course.certificate_image) }}"
+                                             class="img-fluid rounded">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='images/certificates/' + course.certificate_image) }}"
+                                             class="img-fluid rounded">
+                                    {% endif %}
+
                                 </div>
 
                             </div>
