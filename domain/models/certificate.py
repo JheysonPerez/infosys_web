@@ -12,7 +12,11 @@ class Certificate(db.Model):
     course_id = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False)
     issue_date = db.Column(db.DateTime, default=datetime.utcnow)
     code = db.Column(db.String(100), unique=True, nullable=False)
+
+    type = db.Column(db.String(20), default="generated") 
+
     certificate_image = db.Column(db.String(255))
+
     course = db.relationship("Course", backref="certificates")
     course_name = db.Column(db.String)
     start_date = db.Column(db.Date)
