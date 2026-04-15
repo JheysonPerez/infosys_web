@@ -191,7 +191,7 @@
                          data-bs-toggle="modal"
                          data-bs-target="#newsImageModal{{ item.id }}">
 
-                        <img src="{{ url_for('static', filename='images/news/' + item.image) }}"
+                        <img src="{{ url_for('static', filename='images/news/' ~ item.image) }}"
                              class="news-image">
                     </div>
 
@@ -259,7 +259,7 @@
                     </div>
 
                     <div class="modal-body text-center">
-                        <img src="{{ url_for('static', filename='images/news/' + item.image) }}"
+                        <img src="{{ url_for('static', filename='images/news/' ~ item.image) }}"
                              class="img-fluid rounded shadow"
                              style="max-height: 80vh;">
                     </div>
@@ -291,7 +291,7 @@
           <div class="carousel-item {% if loop.first %}active{% endif %}">
 
             {% if item.image %}
-            <img src="{{ url_for('static', filename='images/news/' + item.image) }}"
+            <img src="{{ url_for('static', filename='images/news/' ~ item.image) }}"
                  class="d-block w-100">
             {% endif %}
 

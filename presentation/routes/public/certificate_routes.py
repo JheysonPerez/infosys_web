@@ -11,20 +11,13 @@ def search():
     results = []
 
     if code and not dni:
-        results = Certificate.query.filter(
-            Certificate.code == code
-        ).all()
+        results = Certificate.query.filter_by(code=code).all()
 
     elif dni and not code:
-        results = Certificate.query.filter(
-            Certificate.student_dni == dni
-        ).all()
+        results = Certificate.query.filter_by(student_dni=dni).all()
 
     elif code and dni:
-        results = Certificate.query.filter(
-            Certificate.code == code,
-            Certificate.student_dni == dni
-        ).all()
+        results = Certificate.query.filter_by(code=code, student_dni=dni).all()
 
     is_admin = session.get("user") and session.get("user").get("is_admin")
 

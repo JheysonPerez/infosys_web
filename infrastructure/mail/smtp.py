@@ -5,8 +5,15 @@ mail = Mail()
 def send_email(subject, body, recipients):
     if not recipients:
         return
-    msg = Message(subject=subject, recipients=recipients, body=body)
+
+    msg = Message(
+        subject=subject,
+        recipients=recipients,
+        body=body
+    )
+
     try:
         mail.send(msg)
-    except Exception:
-        pass
+        print(" Email enviado correctamente a:", recipients)
+    except Exception as e:
+        print(" ERROR AL ENVIAR EMAIL:", str(e))

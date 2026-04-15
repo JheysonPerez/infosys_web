@@ -1,4 +1,6 @@
 import os
+import qrcode
+import uuid
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 from flask import current_app
@@ -8,9 +10,11 @@ from domain.models.course import Course
 from infrastructure.database.postgres import db
 
 
+# GENERAR IMAGEN 
 def generate_certificate_image(cert):
-    template_name = os.path.basename(cert.course.certificate_image)
-
+    template_name = os.path.basename(
+        getattr(cert, "template_snapshot", getattr(cert.course, "certificate_image", "default.png"))
+    )
     template_path = os.path.join(
         current_app.root_path,
         "static",
@@ -23,11 +27,26 @@ def generate_certificate_image(cert):
     draw = ImageDraw.Draw(image)
 
     def load_font(size):
-        return ImageFont.truetype("arial.ttf", size)
+        try:
+            font_path = os.path.join(
+                current_app.root_path,
+                "static",
+                "fonts",
+                "DejaVuSans-Bold.ttf"
+            )
+            return ImageFont.truetype(font_path, size)
+        except:
+            return ImageFont.load_default()
 
     title_font = load_font(50)
     subtitle_font = load_font(28)
     body_font = load_font(18)
+    syllabus_font_size = 12
+
+    try:
+        syllabus_font = ImageFont.truetype(body_font.path, syllabus_font_size)
+    except:
+        syllabus_font = body_font  
 
     def fit_text(text, max_width, start_size=50, min_size=25):
         size = start_size
@@ -60,13 +79,11 @@ def generate_certificate_image(cert):
             test_line = " ".join(current_line + [word])
             bbox = draw.textbbox((0, 0), test_line, font=font)
             width = bbox[2] - bbox[0]
-
             if width <= max_width:
                 current_line.append(word)
             else:
                 lines.append(current_line)
                 current_line = [word]
-
         if current_line:
             lines.append(current_line)
 
@@ -79,20 +96,11 @@ def generate_certificate_image(cert):
                 draw.text((x, y + i * (line_height + 5)), line_text, fill="black", font=font)
                 continue
 
-            words_width = sum(
-                draw.textbbox((0, 0), word, font=font)[2]
-                for word in line_words
-            )
-
+            words_width = sum(draw.textbbox((0, 0), word, font=font)[2] for word in line_words)
             spaces = len(line_words) - 1
-            if spaces > 0:
-                total_space = max_width - words_width
-                space_width = total_space / spaces
-            else:
-                space_width = 0
+            space_width = (max_width - words_width) / spaces if spaces > 0 else 0
 
             current_x = x
-
             for word in line_words:
                 draw.text((current_x, y + i * (line_height + 5)), word, fill="black", font=font)
                 word_width = draw.textbbox((0, 0), word, font=font)[2]
@@ -103,11 +111,7 @@ def generate_certificate_image(cert):
             "enero", "febrero", "marzo", "abril", "mayo", "junio",
             "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
         ]
-
-        return (
-            f"del {inicio.day} de {meses[inicio.month - 1]} "
-            f"al {fin.day} de {meses[fin.month - 1]}"
-        )
+        return f"del {inicio.day} de {meses[inicio.month - 1]} al {fin.day} de {meses[fin.month - 1]}"
 
     def get_fecha_actual():
         meses = [
@@ -117,14 +121,28 @@ def generate_certificate_image(cert):
         now = datetime.now()
         return f"{now.day} de {meses[now.month - 1]} de {now.year}"
 
+    # TEXTO 
     center_text("CERTIFICADO", 150, title_font)
 
-    x_base = 200
+    x_base = 100
     body_width = 800
 
     left_text("Otorgado a:", x_base, 220, subtitle_font)
-
     center_text(cert.student_name, 260, name_font)
+
+    syllabus_text = getattr(cert, "syllabus_snapshot", getattr(cert.course, "syllabus", "Contenido no disponible"))
+    syllabus_lines = syllabus_text.splitlines()
+
+    x_syllabus = x_base
+    y_syllabus = 570
+    line_spacing = 15
+
+    draw.text((x_syllabus, y_syllabus), "Contenido del curso:", fill="black", font=syllabus_font)
+    y_syllabus += line_spacing
+
+    for line in syllabus_lines:
+        draw.text((x_syllabus, y_syllabus), f"- {line}", fill="black", font=syllabus_font)
+        y_syllabus += line_spacing
 
     texto_completo = (
         f"Por haber culminado y aprobado satisfactoriamente el Curso de Capacitación: "
@@ -137,55 +155,106 @@ def generate_certificate_image(cert):
     draw_paragraph_justified(draw, texto_completo, x_base, 330, body_font, body_width)
 
     fecha_texto = f"Tingo María, {get_fecha_actual()}"
-
     bbox = draw.textbbox((0, 0), fecha_texto, font=body_font)
     text_width = bbox[2] - bbox[0]
 
     x_fecha = x_base + body_width - text_width
     y_fecha = image.height - 250
-
     draw.text((x_fecha, y_fecha), fecha_texto, fill="black", font=body_font)
 
     codigo_texto = cert.code
-
-    bbox = draw.textbbox((0, 0), codigo_texto, font=body_font)
+    bbox = draw.textbbox((0, 0), codigo_texto, font=syllabus_font)
     text_width = bbox[2] - bbox[0]
 
-    x_codigo = x_base + body_width - text_width
+    x_codigo = x_base + body_width - text_width + 19
     y_codigo = y_fecha + 225
+    draw.text((x_codigo, y_codigo), codigo_texto, fill="black", font=syllabus_font)
 
-    draw.text((x_codigo, y_codigo), codigo_texto, fill="black", font=body_font)
+    # QR 
+    qr_url = f"https://infosys-web.onrender.com/certificado/{cert.code}"
+    qr = qrcode.make(qr_url).resize((90, 90))
+
+    qr_x = image.width - 140
+    qr_y = image.height - 127
+
+    image.paste(qr, (qr_x, qr_y))
 
     return image
 
 
-def create_certificate(student_name, student_dni, course_id, code, start_date, end_date):
+# CREATE 
+def create_certificate(
+    student_name,
+    student_dni,
+    course_id,
+    code,
+    start_date,
+    end_date,
+    type="generated",
+    file=None
+):
     course = Course.query.get(course_id)
+    if not course:
+        raise ValueError("Curso no encontrado")
 
     cert = Certificate(
         student_name=student_name,
         student_dni=student_dni,
         course_id=course_id,
         code=code,
+        type=type,
         course_name=course.title,
+        syllabus_snapshot=course.syllabus,
         start_date=start_date,
         end_date=end_date,
-        duration=course.estimated_hours
+        duration=course.estimated_hours,
+        template_snapshot=course.certificate_image
     )
 
     db.session.add(cert)
     db.session.commit()
 
-    filename = None
+    # EXTERNAL 
+    if type == "external":
+        if file and file.filename:
 
-    if course and course.certificate_image:
+            filename = f"{uuid.uuid4().hex}_{file.filename}"
+
+            upload_folder = os.path.join(
+                current_app.root_path,
+                "static",
+                "images",
+                "external_certificates"
+            )
+            os.makedirs(upload_folder, exist_ok=True)
+
+            path = os.path.join(upload_folder, filename)
+
+            image = Image.open(file).convert("RGB")
+
+            qr_url = f"https://infosys-web.onrender.com/certificado/{code}"
+            qr = qrcode.make(qr_url).resize((90, 90))
+
+            qr_x = image.width - 730
+            qr_y = image.height - 137
+
+            image.paste(qr, (qr_x, qr_y))
+
+            image.save(path, quality=95)
+
+            cert.certificate_image = f"images/external_certificates/{filename}"
+            db.session.commit()
+
+        return cert
+
+    # GENERADO 
+    if course.certificate_image:
         output_folder = os.path.join(
             current_app.root_path,
             "static",
             "images",
             "generated_certificates"
         )
-
         os.makedirs(output_folder, exist_ok=True)
 
         output_filename = f"{code}.png"
@@ -194,14 +263,13 @@ def create_certificate(student_name, student_dni, course_id, code, start_date, e
         image = generate_certificate_image(cert)
         image.save(output_path)
 
-        filename = f"images/generated_certificates/{output_filename}"
-
-        cert.certificate_image = filename
+        cert.certificate_image = f"images/generated_certificates/{output_filename}"
         db.session.commit()
 
     return cert
 
 
+# BUSQUEDA 
 def search_certificates(query):
     return Certificate.query.filter(
         (Certificate.student_name.ilike(f"%{query}%")) |

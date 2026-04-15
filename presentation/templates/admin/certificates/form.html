@@ -7,26 +7,34 @@
 {% block content %}
 
 <h2 class="mb-4">
-    {{ "Editar Certificado" if cert else "Generar Nuevo Certificado" }}
+    {{ "Editar Certificado" if cert else "Nuevo Certificado" }}
 </h2>
 
-<form method="POST">
+<form method="POST" enctype="multipart/form-data" id="certForm">
 
     <div class="card p-4 shadow-sm">
 
         <div class="mb-3">
-            <label class="form-label">
-                Nombre completo <span class="text-danger">*</span>
-            </label>
+            <label class="form-label">Acción a realizar <span class="text-danger">*</span></label>
+            <select name="type" id="typeSelect" class="form-select">
+                <option value="generated" {% if not cert or cert.type == 'generated' %}selected{% endif %}>
+                    Generar certificado
+                </option>
+                <option value="external" {% if cert and cert.type == 'external' %}selected{% endif %}>
+                    Subir certificado
+                </option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Nombre completo <span class="text-danger">*</span></label>
             <input type="text" name="student_name" id="student_name" class="form-control"
                    value="{{ cert.student_name if cert else '' }}"
                    required minlength="5">
         </div>
 
         <div class="mb-3">
-            <label class="form-label">
-                DNI <span class="text-danger">*</span>
-            </label>
+            <label class="form-label">DNI <span class="text-danger">*</span></label>
             <input type="text" name="student_dni" class="form-control"
                    value="{{ cert.student_dni if cert else '' }}"
                    required minlength="8" maxlength="8"
@@ -34,26 +42,18 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">
-                Código del certificado <span class="text-danger">*</span>
-            </label>
-            <input type="text"
-                   name="code"
-                   id="code"
-                   class="form-control"
-                   value="{{ cert.code if cert else '' }}"
-                   required>
+            <label class="form-label">Código del certificado <span class="text-danger">*</span></label>
+            <input type="text" name="code" id="code" class="form-control"
+                   value="{{ cert.code if cert else '' }}" required>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">
-                Curso <span class="text-danger">*</span>
-            </label>
+            <label class="form-label">Curso <span class="text-danger">*</span></label>
             <select name="course_id" id="courseSelect" class="form-select" required>
                 <option value="">Seleccionar curso</option>
                 {% for course in courses %}
                     <option value="{{ course.id }}"
-                        data-image="{{ course.certificate_image if course.certificate_image else '' }}"
+                        data-image="{{ url_for('static', filename=course.certificate_image) if course.certificate_image else '' }}"
                         {% if cert and cert.course_id == course.id %}selected{% endif %}>
                         {{ course.title }}
                     </option>
@@ -62,46 +62,39 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">
-                Fecha de inicio <span class="text-danger">*</span>
-            </label>
-            <input type="date" name="start_date" class="form-control"
-                   value="{{ cert.start_date if cert else '' }}" required>
+            <label class="form-label">Fecha de inicio <span class="text-danger">*</span></label>
+            <input type="date" name="start_date" id="start_date" class="form-control"
+                   value="{{ cert.start_date.strftime('%Y-%m-%d') if cert and cert.start_date else '' }}" required>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">
-                Fecha de fin <span class="text-danger">*</span>
-            </label>
-            <input type="date" name="end_date" class="form-control"
-                   value="{{ cert.end_date if cert else '' }}" required>
+            <label class="form-label">Fecha de fin <span class="text-danger">*</span></label>
+            <input type="date" name="end_date" id="end_date" class="form-control"
+                   value="{{ cert.end_date.strftime('%Y-%m-%d') if cert and cert.end_date else '' }}" required>
+        </div>
+
+        <div class="mb-3" id="uploadContainer" style="display:none;">
+            <label class="form-label">Subir certificado </label>
+            <input type="file" name="certificate_file" id="fileInput" class="form-control" accept="image/*">
         </div>
 
         <div class="mb-3" id="previewContainer" style="display:none;">
             <p class="mb-1">Plantilla del certificado:</p>
-            <img id="previewImage"
-                 class="img-fluid rounded shadow-sm"
-                 style="max-width:300px;">
+            <img id="previewImage" class="img-fluid rounded shadow-sm" style="max-width:300px;">
         </div>
 
         <div class="mb-3">
-            <button type="button" id="previewBtn" class="btn btn-info">
-                Vista previa 
-            </button>
+            <button type="button" id="previewBtn" class="btn btn-info">Vista previa</button>
         </div>
 
         <div class="mb-3" id="realPreviewContainer" style="display:none;">
-            <img id="realPreviewImage"
-                 class="img-fluid rounded shadow"
-                 style="max-width:100%;">
+            <img id="realPreviewImage" class="img-fluid rounded shadow" style="max-width:100%;">
         </div>
 
         <div class="d-flex justify-content-between mt-4">
-            <a href="{{ url_for('admin_certificates.search_admin') }}" class="btn btn-secondary">
-                Cancelar
-            </a>
+            <a href="{{ url_for('admin_certificates.search_admin') }}" class="btn btn-secondary">Cancelar</a>
             <button type="submit" class="btn btn-primary">
-                {{ "Actualizar Certificado" if cert else "Generar Certificado" }}
+                {{ "Actualizar Certificado" if cert else "Guardar Certificado" }}
             </button>
         </div>
 
@@ -113,46 +106,85 @@
 const courseSelect = document.getElementById('courseSelect');
 const previewContainer = document.getElementById('previewContainer');
 const previewImage = document.getElementById('previewImage');
-
 const previewBtn = document.getElementById('previewBtn');
 const realPreviewImage = document.getElementById('realPreviewImage');
 const realPreviewContainer = document.getElementById('realPreviewContainer');
+const typeSelect = document.getElementById('typeSelect');
+const uploadContainer = document.getElementById('uploadContainer');
+const fileInput = document.getElementById('fileInput');
+const startDateInput = document.getElementById('start_date');
+const endDateInput = document.getElementById('end_date');
+const certForm = document.getElementById('certForm');
 
-courseSelect.addEventListener('change', function() {
-    const selectedOption = this.options[this.selectedIndex];
-    const image = selectedOption.dataset.image;
+function toggleType() {
+    if (typeSelect.value === 'external') {
+        uploadContainer.style.display = 'block';
+        previewContainer.style.display = 'none';
+    } else {
+        uploadContainer.style.display = 'none';
+        showTemplatePreview();
+    }
+}
 
+typeSelect.addEventListener('change', toggleType);
+window.addEventListener('load', toggleType);
+
+function showTemplatePreview() {
+    const selectedOption = courseSelect.options[courseSelect.selectedIndex];
+    const image = selectedOption.dataset.image || '';
     if (image) {
-        previewImage.src = "{{ url_for('static', filename='') }}" + image;
+        previewImage.src = image;
         previewContainer.style.display = 'block';
     } else {
-        previewImage.src = '';
         previewContainer.style.display = 'none';
+    }
+}
+
+courseSelect.addEventListener('change', function() {
+    if (typeSelect.value === 'generated') {
+        showTemplatePreview();
     }
 });
 
 previewBtn.addEventListener('click', function() {
-
-    const formData = new FormData(document.querySelector('form'));
+    const formData = new FormData(certForm);
 
     fetch('/admin/certificates/preview', {
         method: 'POST',
         body: formData
     })
-    .then(res => {
-        if (!res.ok) throw new Error();
-        return res.blob();
-    })
+    .then(res => res.ok ? res.blob() : Promise.reject())
     .then(blob => {
         const url = URL.createObjectURL(blob);
         realPreviewImage.src = url;
         realPreviewContainer.style.display = 'block';
     })
-    .catch(() => {
-        alert("Completa los campos para ver la vista previa");
-    });
-
+    .catch(() => alert("Completa los campos para ver la vista previa"));
 });
+
+function validateDates() {
+    if (startDateInput.value) {
+        endDateInput.min = startDateInput.value;
+        if (endDateInput.value && endDateInput.value < startDateInput.value) {
+            endDateInput.value = startDateInput.value;
+        }
+    } else {
+        endDateInput.min = '';
+    }
+}
+
+startDateInput.addEventListener('input', validateDates);
+endDateInput.addEventListener('input', validateDates);
+
+certForm.addEventListener('submit', function(e) {
+    validateDates();
+    if (!certForm.checkValidity()) {
+        e.preventDefault();
+        alert(certForm.querySelector(':invalid').validationMessage);
+    }
+});
+
+window.addEventListener('load', validateDates);
 </script>
 
 {% endblock %}
