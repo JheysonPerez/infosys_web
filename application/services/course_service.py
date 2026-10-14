@@ -1,25 +1,172 @@
 from domain.models import Course
 from infrastructure.database.postgres import db
+from infrastructure.external.moodle_api import MoodleAPI
+
 
 # servicio para manejar cursos
 class CourseService:
 
-    # obtener todos los cursos
+    # obtener todos los cursos locales (admin)
     @staticmethod
     def get_all():
         return Course.query.all()
 
-    # obtener solo cursos activos
+
+    # obtener cursos activos locales
     @staticmethod
     def get_active():
         return Course.query.filter_by(status="activo").all()
 
-    # obtener curso por id
+
+    # obtener curso local por id
     @staticmethod
     def get_by_id(course_id: int):
         return Course.query.get(course_id)
 
-    # filtrar cursos
+
+    @staticmethod
+    def get_moodle_course(course_id):
+
+        try:
+
+            data = MoodleAPI.get_course(course_id)
+            mc = data["courses"][0] if data.get("courses") else None
+
+            if not mc:
+                return None
+
+            local_data = Course.query.filter_by(
+                moodle_course_id=int(mc["id"])
+            ).first()
+
+            if local_data:
+
+                mc["price"] = local_data.price
+                mc["category"] = (
+                    local_data.category
+                    if local_data.category
+                    else mc.get("categoryname")
+                )
+
+                mc["modality"] = local_data.modality
+                mc["level"] = local_data.level
+                mc["duration_weeks"] = local_data.duration_weeks
+                mc["estimated_hours"] = local_data.estimated_hours
+                mc["instructor"] = local_data.instructor
+                mc["certificate_image"] = local_data.certificate_image
+                mc["syllabus"] = local_data.syllabus
+                mc["additional_info"] = local_data.additional_info
+                mc["featured"] = local_data.featured
+                mc["status"] = local_data.status
+
+            else:
+
+                mc["price"] = None
+
+                mc["category"] = (
+                    mc.get("categoryname")
+                    or "Sin categoría"
+                )
+
+                mc["modality"] = None
+                mc["level"] = None
+                mc["duration_weeks"] = None
+                mc["estimated_hours"] = None
+                mc["instructor"] = None
+                mc["certificate_image"] = None
+                mc["syllabus"] = None
+                mc["additional_info"] = None
+                mc["featured"] = False
+                mc["status"] = "activo"
+
+            return mc
+
+        except Exception as e:
+
+            print("Error get_moodle_course:", e)
+            import traceback
+            traceback.print_exc()
+
+            return None
+
+
+    @staticmethod
+    def get_moodle_courses():
+
+        try:
+
+            moodle_courses = MoodleAPI.get_courses()
+            local_courses = Course.query.all()
+
+            local_map = {
+                c.moodle_course_id: c
+                for c in local_courses
+                if c.moodle_course_id
+            }
+
+            enriched_courses = []
+
+            for mc in moodle_courses:
+
+                moodle_id = mc["id"]
+
+                local_data = local_map.get(moodle_id)
+
+                if local_data:
+
+                    mc["price"] = local_data.price
+
+                    mc["category"] = (
+                        local_data.category
+                        if local_data.category
+                        else mc.get("categoryname")
+                    )
+
+                    mc["level"] = local_data.level
+                    mc["modality"] = local_data.modality
+                    mc["duration_weeks"] = local_data.duration_weeks
+                    mc["estimated_hours"] = local_data.estimated_hours
+                    mc["instructor"] = local_data.instructor
+                    mc["certificate_image"] = local_data.certificate_image
+                    mc["syllabus"] = local_data.syllabus
+                    mc["additional_info"] = local_data.additional_info
+                    mc["featured"] = local_data.featured
+                    mc["status"] = local_data.status
+
+                else:
+
+                    mc["price"] = None
+
+                    mc["category"] = (
+                        mc.get("categoryname")
+                        or "Sin categoría"
+                    )
+
+                    mc["level"] = None
+                    mc["modality"] = None
+                    mc["duration_weeks"] = None
+                    mc["estimated_hours"] = None
+                    mc["instructor"] = None
+                    mc["certificate_image"] = None
+                    mc["syllabus"] = None
+                    mc["additional_info"] = None
+                    mc["featured"] = False
+                    mc["status"] = "activo"
+
+                enriched_courses.append(mc)
+
+            return enriched_courses
+
+        except Exception as e:
+
+            print("Error en get_moodle_courses:", e)
+            import traceback
+            traceback.print_exc()
+
+            return []
+        
+
+    # FILTROS
     @staticmethod
     def filter_courses(
         search=None,
@@ -30,141 +177,216 @@ class CourseService:
         include_inactive=False
     ):
 
-        query = Course.query
+        courses = CourseService.get_moodle_courses()
 
-        # solo activos si no es admin
-        if not include_inactive:
-            query = query.filter(Course.status == "activo")
+        filtered = []
 
-        # búsqueda
-        if search and search.strip():
-            query = query.filter(
-                Course.title.ilike(f"%{search.strip()}%")
-            )
+        for course in courses:
 
-        # categoría
-        if category:
-            query = query.filter(
-                db.func.lower(Course.category) == category.lower()
-            )
+            if not include_inactive:
+                if course.get("status", "activo") != "activo":
+                    continue
 
-        # modalidad
-        if modality:
-            query = query.filter(
-                db.func.lower(Course.modality) == modality.lower()
-            )
+            # Buscar por nombre
+            if search and search.strip():
+                if search.lower() not in (
+                    course.get("fullname", "").lower()
+                ):
+                    continue
 
-        # nivel
-        if level:
-            query = query.filter(
-                db.func.lower(Course.level) == level.lower()
-            )
+            # Categoría
+            if category:
+                if (
+                    course.get("category", "").lower()
+                    != category.lower()
+                ):
+                    continue
 
-        # duración
-        if duration:
+            # Modalidad
+            if modality:
+                if (
+                    course.get("modality", "").lower()
+                    != modality.lower()
+                ):
+                    continue
+
+            # Nivel
+            if level:
+                if (
+                    course.get("level", "").lower()
+                    != level.lower()
+                ):
+                    continue
+
+            # Duración
+            if duration:
+
+                weeks = course.get("duration_weeks")
+
+                if weeks:
+
+                    try:
+
+                        if "-" in duration:
+                            start, end = map(int, duration.split("-"))
+
+                            if not (start <= weeks <= end):
+                                continue
+
+                        else:
+
+                            if weeks != int(duration):
+                                continue
+
+                    except:
+                        pass
+
+            filtered.append(course)
+
+        return filtered
+
+
+    # categorías disponibles
+    @staticmethod
+    def get_categories():
+
+        categorias = db.session.query(
+            Course.category
+        ).distinct().all()
+
+        return sorted([
+            c[0]
+            for c in categorias
+            if c[0]
+        ])
+
+
+    # modalidades disponibles
+    @staticmethod
+    def get_modalities():
+
+        modalidades = db.session.query(
+            Course.modality
+        ).distinct().all()
+
+        return sorted([
+            m[0]
+            for m in modalidades
+            if m[0]
+        ])
+
+
+    # niveles disponibles
+    @staticmethod
+    def get_levels():
+
+        niveles = db.session.query(
+            Course.level
+        ).distinct().all()
+
+        return sorted([
+            n[0]
+            for n in niveles
+            if n[0]
+        ])
+
+
+    # rangos de duración dinámicos
+    @staticmethod
+    def get_duration_ranges(courses):
+
+        duraciones = []
+
+        for c in courses:
+
             try:
-                if "-" in duration:
-                    start, end = map(int, duration.split("-"))
-                    query = query.filter(
-                        Course.duration_weeks >= start,
-                        Course.duration_weeks <= end
-                    )
-                else:
-                    query = query.filter(
-                        Course.duration_weeks == int(duration)
-                    )
+
+                semanas = c.get("duration_weeks")
+
+                if semanas:
+                    duraciones.append(int(semanas))
+
             except:
                 pass
 
-        return query.all()
+        return sorted(list(set(duraciones)))
 
-    # crear curso
+
+    # crear curso local
     @staticmethod
-    def create(data: dict):
+    def create(data):
 
         course = Course(
-            title=data.get("title"),
-            description=data.get("description"),
+            moodle_course_id=int(data["moodle_course_id"]),
             category=data.get("category"),
             level=data.get("level"),
             modality=data.get("modality"),
-            duration_weeks=int(data.get("duration_weeks") or 0),
-            estimated_hours=int(data.get("estimated_hours") or 0),
+            duration_weeks=int(data["duration_weeks"]) if data.get("duration_weeks") else None,
+            estimated_hours=int(data["estimated_hours"]) if data.get("estimated_hours") else None,
             instructor=data.get("instructor"),
             syllabus=data.get("syllabus"),
             additional_info=data.get("additional_info"),
-
-            # precio
-            price=float(data.get("price")) if data.get("price") else None,
-
-            # destacado
-            featured=True if data.get("featured") else False,
-
-            # estado
+            price=float(data["price"]) if data.get("price") else None,
+            featured=data.get("featured", False),
             status=data.get("status", "activo"),
-
-            # imagen del curso
-            image=data.get("image"),
-
-            # certificado
             certificate_image=data.get("certificate_image")
         )
 
         db.session.add(course)
         db.session.commit()
+
         return course
 
-    # actualizar curso
+    # actualizar curso local
     @staticmethod
-    def update(course_id: int, data: dict):
+    def update(course_id, data):
 
         course = Course.query.get(course_id)
 
         if not course:
-            return None
+            course = Course.query.filter_by(
+                moodle_course_id=int(course_id)
+            ).first()
 
-        course.title = data.get("title", course.title)
-        course.description = data.get("description", course.description)
-        course.category = data.get("category", course.category)
-        course.level = data.get("level", course.level)
-        course.modality = data.get("modality", course.modality)
+        if not course:
+            data["moodle_course_id"] = course_id
+            return CourseService.create(data)
 
-        course.duration_weeks = int(data.get("duration_weeks") or course.duration_weeks or 0)
-        course.estimated_hours = int(data.get("estimated_hours") or course.estimated_hours or 0)
+        course.category = data.get("category")
+        course.level = data.get("level")
+        course.modality = data.get("modality")
 
-        course.instructor = data.get("instructor", course.instructor)
-        course.syllabus = data.get("syllabus", course.syllabus)
-        course.additional_info = data.get("additional_info", course.additional_info)
+        course.duration_weeks = (int(data["duration_weeks"]) if data.get("duration_weeks") else None)
+        course.estimated_hours = (int(data["estimated_hours"]) if data.get("estimated_hours") else None)
 
-        # precio
-        course.price = float(data.get("price")) if data.get("price") else None
+        course.instructor = data.get("instructor")
+        course.syllabus = data.get("syllabus")
+        course.additional_info = data.get("additional_info")
 
-        # destacado
-        course.featured = True if data.get("featured") else False
+        course.price = (float(data["price"]) if data.get("price") else None)
 
-        # estado
-        course.status = data.get("status", course.status)
+        course.featured = data.get("featured", False)
+        course.status = data.get("status", "activo")
 
-        # actualizar imagen solo si viene nueva
-        if data.get("image"):
-            course.image = data.get("image")
-
-        # actualizar certificado solo si viene nuevo
-        if data.get("certificate_image"):
-            course.certificate_image = data.get("certificate_image")
+        if "certificate_image" in data:
+            course.certificate_image = data["certificate_image"]
 
         db.session.commit()
+
         return course
 
-    # eliminar curso
+    # eliminar curso local
     @staticmethod
-    def delete(course_id: int):
+    def delete(course_id):
 
         course = Course.query.get(course_id)
+        if not course:
+            course = Course.query.filter_by(moodle_course_id=int(course_id)).first()
 
         if not course:
             return False
 
         db.session.delete(course)
         db.session.commit()
+
         return True

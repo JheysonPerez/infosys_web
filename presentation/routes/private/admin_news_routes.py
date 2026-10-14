@@ -18,7 +18,7 @@ def save_image(file):
         return None
 
     filename = secure_filename(file.filename)
-    unique_name = str(uuid.uuid4()) + "_" + filename
+    unique_name = filename
 
     path = os.path.join(UPLOAD_FOLDER, unique_name)
     file.save(path)

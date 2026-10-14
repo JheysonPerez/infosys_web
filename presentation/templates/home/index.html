@@ -10,7 +10,6 @@
     </h1>
 </section>
 
-<!-- Servicios Destacados -->
 <section class="mb-5">
     <h3 class="mb-4">Servicios Destacados</h3>
 
@@ -59,7 +58,6 @@
     {% endif %}
 </section>
 
-<!-- Cursos Destacados -->
 <section class="mb-5">
     <h3 class="mb-4">Cursos Destacados</h3>
 
@@ -69,20 +67,22 @@
                 <div class="col-md-4">
                     <div class="card h-100 shadow-sm border-success border-2 overflow-hidden">
 
-                        {% if course.image %}
-                            <img src="{{ url_for('static', filename='images/courses/' ~ course.image) }}"
+                        {% if course.courseimage %}
+                            <img src="{{ course.courseimage }}"
                                  class="card-img-top"
-                                 style="height: 200px; object-fit: cover;">
+                                 style="height:200px; object-fit:cover;"
+                                 alt="{{ course.fullname }}">
                         {% else %}
                             <img src="{{ url_for('static', filename='images/logo.png') }}"
                                  class="card-img-top"
-                                 style="height: 200px; object-fit: cover;">
+                                 style="height:200px; object-fit:cover;"
+                                 alt="{{ course.fullname }}">
                         {% endif %}
 
                         <div class="card-body d-flex flex-column">
 
                             <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
-                                <h5 class="card-title mb-0">{{ course.title }}</h5>
+                                <h5 class="card-title mb-0">{{ course.fullname }}</h5>
 
                                 {% if course.featured %}
                                     <span class="badge bg-success">Destacado</span>
@@ -90,7 +90,7 @@
                             </div>
 
                             <p class="text-muted flex-grow-1">
-                                {{ course.description | truncate(100) }}
+                                {{ course.summary | striptags | truncate(100) }}
                             </p>
 
                             <a href="{{ url_for('courses.course_detail', course_id=course.id) }}"
@@ -108,7 +108,6 @@
     {% endif %}
 </section>
 
-<!-- Certificaciones Destacadas -->
 <section class="mb-5">
     <h3 class="mb-4">Certificaciones Destacadas</h3>
 
@@ -116,18 +115,28 @@
         <div class="row g-4">
 
             {% for course in certificates %}
+                {% set cert = course.certificate_image %}
+
                 <div class="col-md-4">
 
                     <div class="card shadow-sm border-0 overflow-hidden h-100">
 
-                        <img src="{{ url_for('static', filename=course.certificate_image) }}"
-                             class="card-img-top"
-                             style="height: 220px; object-fit: cover; cursor:pointer;"
-                             data-bs-toggle="modal"
-                             data-bs-target="#certModal{{ course.id }}">
+                        {% if cert.startswith('images/') %}
+                            <img src="{{ url_for('static', filename=cert) }}"
+                                class="card-img-top"
+                                style="height:220px; object-fit:cover; cursor:pointer;"
+                                data-bs-toggle="modal"
+                                data-bs-target="#certModal{{ course.id }}">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/certificates/' ~ cert) }}"
+                                class="card-img-top"
+                                style="height:220px; object-fit:cover; cursor:pointer;"
+                                data-bs-toggle="modal"
+                                data-bs-target="#certModal{{ course.id }}">
+                        {% endif %}
 
                         <div class="card-body text-center">
-                            <h6 class="mb-0">{{ course.title }}</h6>
+                            <h6 class="mb-0">{{ course.fullname }}</h6>
                         </div>
 
                     </div>
@@ -140,15 +149,25 @@
 
                             <div class="modal-header">
                                 <h5 class="modal-title">
-                                    Certificado - {{ course.title }}
+                                    Certificado - {{ course.fullname }}
                                 </h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                <button type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal"></button>
                             </div>
 
                             <div class="modal-body text-center">
-                                <img src="{{ url_for('static', filename=course.certificate_image) }}"
-                                     class="img-fluid rounded shadow"
-                                     style="max-height: 80vh;">
+
+                                {% if cert.startswith('images/') %}
+                                    <img src="{{ url_for('static', filename=cert) }}"
+                                        class="img-fluid rounded shadow"
+                                        style="max-height:80vh;">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='images/certificates/' ~ cert) }}"
+                                        class="img-fluid rounded shadow"
+                                        style="max-height:80vh;">
+                                {% endif %}
+
                             </div>
 
                         </div>
@@ -157,13 +176,14 @@
 
             {% endfor %}
 
+
         </div>
     {% else %}
         <p class="text-muted">No hay certificados disponibles.</p>
     {% endif %}
 </section>
 
-<!-- Noticias y Novedades -->
+<!-- El resto de la sección de noticias queda igual -->
 <section class="mt-5">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -172,7 +192,7 @@
         {% if is_admin %}
             <a href="{{ url_for('admin_news.create_news') }}"
                class="btn btn-success btn-sm">
-               Nueva Noticia
+                Nueva Noticia
             </a>
         {% endif %}
     </div>
@@ -189,10 +209,11 @@
 
                     <div class="news-image-wrapper"
                          data-bs-toggle="modal"
-                         data-bs-target="#newsImageModal{{ item.id }}">
+                         data-bs-target="#newsImageModal{{ item.id }}"
+                         style="cursor: pointer;">
 
-                        <img src="{{ url_for('static', filename='images/news/' + item.image) }}"
-                             class="news-image">
+                        <img src="{{ url_for('static', filename='images/news/' ~ item.image) }}"
+                             class="img-fluid rounded" style="max-height: 150px; object-fit: cover; width: 100%;">
                     </div>
 
                 </div>
@@ -227,7 +248,9 @@
                             </a>
 
                             <form method="post"
-                                  action="{{ url_for('admin_news.delete_news', news_id=item.id) }}">
+                                  action="{{ url_for('admin_news.delete_news', news_id=item.id) }}"
+                                  onsubmit="return confirm('¿Seguro que deseas eliminar esta noticia?');"
+                                  style="display: inline;">
                                 <button class="btn btn-danger btn-sm">
                                     Eliminar
                                 </button>
@@ -259,7 +282,7 @@
                     </div>
 
                     <div class="modal-body text-center">
-                        <img src="{{ url_for('static', filename='images/news/' + item.image) }}"
+                        <img src="{{ url_for('static', filename='images/news/' ~ item.image) }}"
                              class="img-fluid rounded shadow"
                              style="max-height: 80vh;">
                     </div>
@@ -277,68 +300,70 @@
 
 </section>
 
-<!-- MODAL NOTICIAS DESTACADAS -->
 {% if featured_news %}
 <div class="modal fade" id="newsModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-
-      <div id="featuredNewsCarousel" class="carousel slide" data-bs-ride="carousel">
-
-        <div class="carousel-inner">
-
-          {% for item in featured_news %}
-          <div class="carousel-item {% if loop.first %}active{% endif %}">
-
-            {% if item.image %}
-            <img src="{{ url_for('static', filename='images/news/' + item.image) }}"
-                 class="d-block w-100">
-            {% endif %}
-
-            <div class="p-4 text-center">
-              <h4 class="fw-bold mb-2">{{ item.title }}</h4>
-
-              <p class="text-muted">
-                {{ item.content | truncate(200) }}
-              </p>
-
-              <button class="btn btn-success px-5"
-                      data-bs-dismiss="modal">
-                Entendido
-              </button>
-            </div>
-
-          </div>
-          {% endfor %}
-
-        </div>
-
-        <button class="carousel-control-prev"
-                type="button"
-                data-bs-target="#featuredNewsCarousel"
-                data-bs-slide="prev">
-          <span class="carousel-control-prev-icon"></span>
-        </button>
-
-        <button class="carousel-control-next"
-                type="button"
-                data-bs-target="#featuredNewsCarousel"
-                data-bs-slide="next">
-          <span class="carousel-control-next-icon"></span>
-        </button>
-
-      </div>
-
-    </div>
-  </div>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+ 
+      <div id="featuredNewsCarousel" class="carousel slide" data-bs-ride="carousel">
+ 
+        <div class="carousel-inner">
+ 
+          {% for item in featured_news %}
+          <div class="carousel-item {% if loop.first %}active{% endif %}">
+ 
+            {% if item.image %}
+            <img src="{{ url_for('static', filename='images/news/' ~ item.image) }}"
+                 class="d-block w-100" style="max-height: 400px; object-fit: cover;">
+            {% endif %}
+ 
+            <div class="p-4 text-center">
+              <h4 class="fw-bold mb-2">{{ item.title }}</h4>
+ 
+              <p class="text-muted">
+                {{ item.content | truncate(200) }}
+              </p>
+ 
+              <button class="btn btn-success px-5"
+                      data-bs-dismiss="modal">
+                Entendido
+              </button>
+            </div>
+ 
+          </div>
+          {% endfor %}
+ 
+        </div>
+ 
+        <button class="carousel-control-prev"
+                type="button"
+                data-bs-target="#featuredNewsCarousel"
+                data-bs-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+        </button>
+ 
+        <button class="carousel-control-next"
+                type="button"
+                data-bs-target="#featuredNewsCarousel"
+                data-bs-slide="next">
+          <span class="carousel-control-next-icon"></span>
+        </button>
+ 
+      </div>
+ 
+    </div>
+  </div>
 </div>
-
+ 
 <script>
 document.addEventListener("DOMContentLoaded", function(){
-    var modal = new bootstrap.Modal(document.getElementById('newsModal'));
-    modal.show();
+    var modalElement = document.getElementById('newsModal');
+    if (modalElement) {
+        var modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    }
 });
 </script>
 {% endif %}
-
-{% endblock %}
+ 
+{% endblock %}"

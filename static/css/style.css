@@ -394,3 +394,12 @@ body.dark-mode .modal-backdrop.show{
     height:100%;
     object-fit:cover;
 }
+
+body.dark-mode input:disabled,
+body.dark-mode textarea:disabled,
+body.dark-mode select:disabled {
+    background-color: #111111 !important;
+    color: rgb(255, 255, 255) !important; 
+    border: 1px solid var(--border-color) !important;
+    opacity: 1; 
+}

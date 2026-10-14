@@ -17,7 +17,7 @@ UPLOAD_FOLDER = "static/images/services"
 def save_image(file):
     if file and file.filename != "":
         filename = secure_filename(file.filename)
-        unique_name = f"{uuid.uuid4().hex}_{filename}"
+        unique_name = filename
         full_path = os.path.join(current_app.root_path, UPLOAD_FOLDER)
         os.makedirs(full_path, exist_ok=True)
         filepath = os.path.join(full_path, unique_name)

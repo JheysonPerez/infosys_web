@@ -1,4 +1,6 @@
-from flask import Flask, app, session
+import site
+
+from flask import Flask, session
 from dotenv import load_dotenv
 import os
 
@@ -7,6 +9,7 @@ load_dotenv()
 from config import Config
 from infrastructure.database.postgres import db
 from infrastructure.mail.smtp import mail
+from infrastructure.external.moodle_api import MoodleAPI
 
 from domain.models.statistic import Statistic
 from domain.models.course import Course
@@ -66,8 +69,19 @@ def create_app():
     oauth.init_app(app)
 
     with app.app_context():
+
         db.create_all()
 
+        try:
+
+            site = MoodleAPI.get_site_info()
+
+            print(f" Moodle conectado → {site['sitename']}")
+
+        except Exception as e:
+
+            print(f" Error conectando Moodle: {e}")
+            
     @app.context_processor
     def inject_user():
         return dict(

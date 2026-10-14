@@ -30,7 +30,7 @@ def login_google():
     
     redirect_uri = url_for('auth.google_callback', _external=True)
     
-    return google.authorize_redirect(redirect_uri, state=state)
+    return google.authorize_redirect(redirect_uri, state=state, prompt="select_account")
 
 # RUTA CALLBACK GOOGLE
 @auth_bp.route("/auth/google/callback")
