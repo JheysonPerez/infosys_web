@@ -65,7 +65,6 @@ def stats():
     )
 
     # Respuesta según tipo de petición
-
     # Si es una petición AJAX 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return jsonify({

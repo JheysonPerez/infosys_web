@@ -29,97 +29,162 @@
     </div>
 
     <div class="col-md-2">
-        <button class="btn btn-primary w-100">Buscar</button>
+        <button class="btn btn-primary w-100">
+            Buscar
+        </button>
     </div>
 
 </form>
 
+
 {% if results %}
-    <div class="row g-4">
 
-        {% for cert in results %}
-        <div class="col-md-6">
+<div class="row g-4">
 
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
+    {% for cert in results %}
 
-                    <h5 class="card-title mb-2">{{ cert.student_name }}</h5>
+    <div class="col-md-6">
 
-                    <p class="mb-1"><strong>DNI:</strong> {{ cert.student_dni }}</p>
-                    <p class="mb-1">
-                        <strong>Curso:</strong>
-                        {{ cert.course.title if cert.course else "Curso eliminado" }}
-                    </p>
-                    <p class="mb-2"><strong>Código:</strong> {{ cert.code }}</p>
+        <div class="card shadow-sm h-100">
 
-                    {% if cert.certificate_image %}
+            <div class="card-body">
 
-                        {% set file_ext = cert.certificate_image.split('.')[-1].lower() %}
+                <h5 class="card-title mb-2">
+                    {{ cert.student_name }}
+                </h5>
 
-                        <div class="text-center mt-3">
+                <p class="mb-1">
+                    <strong>DNI:</strong>
+                    {{ cert.student_dni }}
+                </p>
 
-                            {% if file_ext in ['jpg', 'jpeg', 'png', 'webp'] %}
-                                <img src="{{ url_for('static', filename=cert.certificate_image) }}"
-                                     class="img-fluid rounded shadow"
-                                     style="max-width:100%; max-height:300px; object-fit:contain;">
-                            {% elif file_ext == 'pdf' %}
-                                <iframe src="{{ url_for('static', filename=cert.certificate_image) }}"
-                                        width="100%"
-                                        height="300"
-                                        class="rounded shadow">
-                                </iframe>
-                            {% else %}
-                                <p class="text-muted">Archivo no previsualizable</p>
-                            {% endif %}
+                <p class="mb-1">
+                    <strong>Curso:</strong>
 
-                        </div>
-
-                        <div class="text-center mt-3">
-                            <a href="{{ url_for('static', filename=cert.certificate_image) }}"
-                               download
-                               class="btn btn-success btn-sm">
-                                Descargar certificado
-                            </a>
-                        </div>
-
+                    {% if cert.course_name %}
+                        {{ cert.course_name }}
+                    {% else %}
+                        Curso no disponible
                     {% endif %}
 
-                    {% if is_admin %}
-                    <div class="mt-3 d-flex gap-2 flex-wrap">
+                </p>
 
-                        <a href="{{ url_for('admin_certificates.edit_certificate', cert_id=cert.id) }}"
-                           class="btn btn-sm btn-warning">
-                            Editar
-                        </a>
+                <p class="mb-2">
+                    <strong>Código:</strong>
+                    {{ cert.code }}
+                </p>
 
-                        <form method="POST"
-                              action="{{ url_for('admin_certificates.delete_certificate', cert_id=cert.id) }}"
-                              onsubmit="return confirm('¿Eliminar certificado?');">
+                {% if cert.start_date %}
 
-                            <button class="btn btn-sm btn-danger">
-                                Eliminar
-                            </button>
+                <p class="mb-1">
+                    <strong>Inicio:</strong>
+                    {{ cert.start_date.strftime('%d/%m/%Y') }}
+                </p>
 
-                        </form>
+                {% endif %}
+
+                {% if cert.end_date %}
+
+                <p class="mb-2">
+                    <strong>Finalización:</strong>
+                    {{ cert.end_date.strftime('%d/%m/%Y') }}
+                </p>
+
+                {% endif %}
+
+                {% if cert.certificate_image %}
+
+                    {% set file_ext = cert.certificate_image.split('.')[-1].lower() %}
+
+                    <div class="text-center mt-3">
+
+                        {% if file_ext in ['jpg', 'jpeg', 'png', 'webp'] %}
+
+                            <img src="{{ url_for('static', filename=cert.certificate_image) }}"
+                                 class="img-fluid rounded shadow"
+                                 style="max-width:100%; max-height:300px; object-fit:contain;">
+
+                        {% elif file_ext == 'pdf' %}
+
+                            <iframe src="{{ url_for('static', filename=cert.certificate_image) }}"
+                                    width="100%"
+                                    height="300"
+                                    class="rounded shadow">
+                            </iframe>
+
+                        {% else %}
+
+                            <p class="text-muted">
+                                Archivo no previsualizable
+                            </p>
+
+                        {% endif %}
 
                     </div>
-                    {% endif %}
+
+                    <div class="text-center mt-3">
+
+                        <a href="{{ url_for('static', filename=cert.certificate_image) }}"
+                           download
+                           class="btn btn-success btn-sm">
+
+                            Descargar certificado
+
+                        </a>
+
+                    </div>
+
+                {% endif %}
+
+                {% if is_admin %}
+
+                <div class="mt-3 d-flex gap-2 flex-wrap">
+
+                    <a href="{{ url_for('admin_certificates.edit_certificate', cert_id=cert.id) }}"
+                       class="btn btn-sm btn-warning">
+
+                        Editar
+
+                    </a>
+
+                    <form method="POST"
+                          action="{{ url_for('admin_certificates.delete_certificate', cert_id=cert.id) }}"
+                          onsubmit="return confirm('¿Eliminar certificado?');">
+
+                        <button class="btn btn-sm btn-danger">
+
+                            Eliminar
+
+                        </button>
+
+                    </form>
 
                 </div>
+
+                {% endif %}
+
             </div>
 
         </div>
-        {% endfor %}
 
     </div>
+
+    {% endfor %}
+
+</div>
 
 {% elif request.args %}
-    <div class="alert alert-danger text-center">
-        No se encontraron certificados.
-    </div>
+
+<div class="alert alert-danger text-center">
+
+    No se encontraron certificados.
+
+</div>
+
 {% endif %}
 
 <script>
+
 const codeInput = document.getElementById("codeInput");
 const dniInput = document.getElementById("dniInput");
 const form = document.getElementById("searchForm");
@@ -138,6 +203,7 @@ form.addEventListener("submit", function() {
     codeInput.value = codeInput.value.trim();
     dniInput.value = dniInput.value.trim();
 });
+
 </script>
 
 {% endblock %}

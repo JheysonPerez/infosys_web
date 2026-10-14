@@ -25,6 +25,9 @@ class Config:
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 
+    MOODLE_URL = os.getenv("MOODLE_URL")
+    MOODLE_TOKEN = os.getenv("MOODLE_TOKEN")
+
     SESSION_COOKIE_NAME = "infosys_session"
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = True

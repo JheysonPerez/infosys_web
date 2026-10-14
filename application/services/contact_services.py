@@ -44,7 +44,8 @@ def save_contact_message(name, email, phone, message):
         "📧 Soporte: jheyson.xcalibur.15@gmail.com\n"
     )
 
-    send_in_thread(subject_user, body_user, [email])
+    if email and email.strip():
+        send_in_thread(subject_user, body_user, [email])
 
     admin_email = os.getenv("MAIL_RECEIVER")
 

@@ -49,13 +49,18 @@
 
         <div class="mb-3">
             <label class="form-label">Curso <span class="text-danger">*</span></label>
+
             <select name="course_id" id="courseSelect" class="form-select" required>
                 <option value="">Seleccionar curso</option>
+
                 {% for course in courses %}
-                    <option value="{{ course.id }}"
+                    <option
+                        value="{{ course.id }}"
                         data-image="{{ url_for('static', filename=course.certificate_image) if course.certificate_image else '' }}"
-                        {% if cert and cert.course_id == course.id %}selected{% endif %}>
-                        {{ course.title }}
+                        data-start="{{ course.startdate }}"
+                        data-end="{{ course.enddate }}"
+                        {% if cert and cert.course and cert.course.moodle_course_id == course.id %}selected{% endif %}>
+                        {{ course.fullname }}
                     </option>
                 {% endfor %}
             </select>
@@ -71,6 +76,12 @@
             <label class="form-label">Fecha de fin <span class="text-danger">*</span></label>
             <input type="date" name="end_date" id="end_date" class="form-control"
                    value="{{ cert.end_date.strftime('%Y-%m-%d') if cert and cert.end_date else '' }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Fecha de emisión <span class="text-danger">*</span></label>
+            <input type="date" name="issue_date" id="issue_date" class="form-control"
+                   value="{{ cert.issue_date.strftime('%Y-%m-%d') if cert and cert.issue_date else '' }}" required>
         </div>
 
         <div class="mb-3" id="uploadContainer" style="display:none;">
@@ -140,7 +151,32 @@ function showTemplatePreview() {
     }
 }
 
-courseSelect.addEventListener('change', function() {
+// Nueva función para llenar fechas automáticamente
+function fillCourseDates() {
+    const option = courseSelect.options[courseSelect.selectedIndex];
+    if (!option || option.value === "") return;
+
+    const start = option.dataset.start;
+    const end = option.dataset.end;
+
+    if (start && start !== "0") {
+        startDateInput.value = new Date(start * 1000)
+            .toISOString()
+            .split('T')[0];
+    }
+
+    if (end && end !== "0") {
+        endDateInput.value = new Date(end * 1000)
+            .toISOString()
+            .split('T')[0];
+    }
+
+    validateDates();
+}
+
+courseSelect.addEventListener('change', function () {
+    fillCourseDates();
+
     if (typeSelect.value === 'generated') {
         showTemplatePreview();
     }
@@ -185,6 +221,7 @@ certForm.addEventListener('submit', function(e) {
 });
 
 window.addEventListener('load', validateDates);
+window.addEventListener('load', fillCourseDates);  // ← Llenar fechas al cargar
 </script>
 
 {% endblock %}

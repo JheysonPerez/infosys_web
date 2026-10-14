@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ course.title }} | Cursos{% endblock %}
+{% block title %}{{ course.fullname or course.title }} | Cursos{% endblock %}
 
 {% block content %}
 
@@ -10,17 +10,19 @@
 
         <div class="col-md-7">
 
-            <h2 class="mb-2">{{ course.title }}</h2>
+            <h2 class="mb-2">{{ course.fullname or course.title }}</h2>
 
             {% if course.featured %}
                 <span class="badge bg-primary mb-3">Curso destacado</span>
             {% endif %}
 
-            {% if course.description %}
-                <p class="text-muted">
-                    {{ course.description }}
-                </p>
-            {% endif %}
+            <div class="text-muted mb-3 small">
+                {% if course.summary %}
+                    {{ course.summary | safe }}
+                {% else %}
+                    <p>Sin descripción disponible.</p>
+                {% endif %}
+            </div>
 
             <hr>
 
@@ -51,7 +53,7 @@
             {% if course.price %}
                 <p><strong>Precio:</strong> S/. {{ "%.2f"|format(course.price) }}</p>
             {% else %}
-                <p><strong>Precio:</strong> Consultar</p>
+                <p><strong>Precio:</strong> Gratis</p>
             {% endif %}
 
             {% if course.instructor %}
@@ -71,29 +73,43 @@
                 Contáctenos por nuestros canales oficiales.
             </p>
 
-            <a href="{{ url_for('courses.list_courses') }}" class="btn btn-secondary mt-3">
-                Volver a Cursos
-            </a>
+            {% if is_admin %}
+                <a href="{{ url_for('admin_courses.list_courses') }}"
+                   class="btn btn-secondary mt-3">
+                    Volver a Cursos
+                </a>
+            {% else %}
+                <a href="{{ url_for('courses.list_courses') }}"
+                   class="btn btn-secondary mt-3">
+                    Volver a Cursos
+                </a>
+            {% endif %}
 
         </div>
 
         <div class="col-md-5">
 
-            {% if course.image %}
-                <img src="{{ url_for('static', filename='images/courses/' ~ course.image) }}"
+            {% if course.courseimage %}
+
+                <img src="{{ course.courseimage }}"
                      class="img-fluid rounded shadow-sm w-100 mb-3"
-                     style="height: 300px; object-fit: cover;">
+                     style="height:300px; object-fit:cover;"
+                     alt="{{ course.fullname or course.title }}">
+
             {% else %}
+
                 <img src="{{ url_for('static', filename='images/logo.png') }}"
                      class="img-fluid rounded shadow-sm w-100 mb-3"
-                     style="height: 300px; object-fit: cover;">
+                     style="height:300px; object-fit:cover;"
+                     alt="Sin imagen">
+
             {% endif %}
 
             {% if course.certificate_image %}
                 <button class="btn btn-outline-success w-100"
                         data-bs-toggle="modal"
                         data-bs-target="#certModal{{ course.id }}">
-                    Ver certificado
+                    Ver plantilla del certificado
                 </button>
             {% endif %}
 
@@ -110,14 +126,29 @@
 
             <div class="modal-header">
                 <h5 class="modal-title">
-                    Certificado - {{ course.title }}
+                    Certificado - {{ course.fullname or course.title }}
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"></button>
             </div>
 
             <div class="modal-body text-center">
-                <img src="{{ url_for('static', filename=course.certificate_image) }}"
-                     class="img-fluid rounded">
+
+                {% if course.certificate_image.startswith('images/') %}
+
+                    <img src="{{ url_for('static', filename=course.certificate_image) }}"
+                         class="img-fluid rounded"
+                         alt="Plantilla del certificado">
+
+                {% else %}
+
+                    <img src="{{ url_for('static', filename='images/certificates/' ~ course.certificate_image) }}"
+                         class="img-fluid rounded"
+                         alt="Plantilla del certificado">
+
+                {% endif %}
+
             </div>
 
         </div>

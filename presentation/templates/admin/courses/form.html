@@ -15,27 +15,28 @@
     <div class="card p-4 shadow-sm">
 
         <div class="mb-3">
-            <label class="form-label">Título del curso <span class="text-danger">*</span></label>
-            <input type="text" name="title" class="form-control"
-                   value="{{ course.title if course else '' }}"
-                   required
-                   placeholder="Ej: Capacitación en Gestión Pública 2026"
-                   minlength="5">
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Descripción <span class="text-danger">*</span></label>
-            <textarea name="description" rows="5" class="form-control"
-                      required
-                      minlength="30"
-                      placeholder="Descripción completa del curso, objetivos, público objetivo, etc.">{{ course.description if course else '' }}</textarea>
+            <label class="form-label">Asociar con Curso de Moodle <span class="text-danger">*</span></label>
+            {% if course %}
+                <select class="form-select" name="moodle_course_id" style="pointer-events: none; opacity: 0.8;" onfocus="this.blur();" tabindex="-1">
+                    <option value="{{ course.id or course.get('id') }}" selected>
+                        {{ course.fullname or course.get('fullname') }}
+                    </option>
+                </select>
+            {% else %}
+                <select name="moodle_course_id" class="form-select" required>
+                    <option value="" disabled selected>Seleccione el curso correspondiente en Moodle</option>
+                    {% for mc in moodle_courses %}
+                        <option value="{{ mc.id }}">{{ mc.fullname }}</option>
+                    {% endfor %}
+                </select>
+            {% endif %}
         </div>
 
         <div class="mb-3">
             <label class="form-label">Categoría <span class="text-danger">*</span></label>
             <input type="text" name="category" class="form-control"
                    list="categorias_cursos"
-                   value="{{ course.category if course else '' }}"
+                   value="{{ course.category or course.get('category') if course else '' }}"
                    required
                    placeholder="Ej: Gestión Pública, Contrataciones, Ofimática">
             
@@ -47,62 +48,47 @@
         </div>
 
         <div class="row">
-
             <div class="col-md-6 mb-3">
                 <label class="form-label">Nivel</label>
-
                 <select name="level" class="form-select">
-
                     <option value="">Seleccionar nivel</option>
-
                     <option value="Basico"
-                        {% if course and course.level == "Basico" %}selected{% endif %}>
+                        {% if course and (course.level == "Basico" or course.get('level') == "Basico") %}selected{% endif %}>
                         Básico
                     </option>
-
                     <option value="Intermedio"
-                        {% if course and course.level == "Intermedio" %}selected{% endif %}>
+                        {% if course and (course.level == "Intermedio" or course.get('level') == "Intermedio") %}selected{% endif %}>
                         Intermedio
                     </option>
-
                     <option value="Avanzado"
-                        {% if course and course.level == "Avanzado" %}selected{% endif %}>
+                        {% if course and (course.level == "Avanzado" or course.get('level') == "Avanzado") %}selected{% endif %}>
                         Avanzado
                     </option>
-
                 </select>
             </div>
 
             <div class="col-md-6 mb-3">
                 <label class="form-label">Modalidad</label>
-
                 <select name="modality" class="form-select">
-
                     <option value="">Seleccionar modalidad</option>
-
                     <option value="Presencial"
-                        {% if course and course.modality == "Presencial" %}selected{% endif %}>
+                        {% if course and (course.modality == "Presencial" or course.get('modality') == "Presencial") %}selected{% endif %}>
                         Presencial
                     </option>
-
                     <option value="Virtual"
-                        {% if course and course.modality == "Virtual" %}selected{% endif %}>
+                        {% if course and (course.modality == "Virtual" or course.get('modality') == "Virtual") %}selected{% endif %}>
                         Virtual
                     </option>
-
                     <option value="Hibrida"
-                        {% if course and course.modality == "Hibrida" %}selected{% endif %}>
+                        {% if course and (course.modality == "Hibrida" or course.get('modality') == "Hibrida") %}selected{% endif %}>
                         Híbrida
                     </option>
-
                     <option value="Autoestudio"
-                        {% if course and course.modality == "Autoestudio" %}selected{% endif %}>
+                        {% if course and (course.modality == "Autoestudio" or course.get('modality') == "Autoestudio") %}selected{% endif %}>
                         Autoestudio
                     </option>
-
                 </select>
             </div>
-
         </div>
 
         <div class="row">
@@ -110,7 +96,7 @@
                 <label class="form-label">Duración (semanas)</label>
                 <input type="number" name="duration_weeks" class="form-control"
                        min="1" step="1"
-                       value="{{ course.duration_weeks if course else '' }}"
+                       value="{{ course.duration_weeks or course.get('duration_weeks') if course else '' }}"
                        placeholder="Ej: 8">
             </div>
 
@@ -118,42 +104,51 @@
                 <label class="form-label">Horas estimadas</label>
                 <input type="number" name="estimated_hours" class="form-control"
                        min="1" step="1"
-                       value="{{ course.estimated_hours if course else '' }}"
+                       value="{{ course.estimated_hours or course.get('estimated_hours') if course else '' }}"
                        placeholder="Ej: 40">
             </div>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Instructor </label>
+            <label class="form-label">Instructor</label>
             <input type="text" name="instructor" class="form-control"
-                   value="{{ course.instructor if course else '' }}"
+                   value="{{ course.instructor or course.get('instructor') if course else '' }}"
                    placeholder="Ej: Mg. Juan Pérez">
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Sílabo </label>
+            <label class="form-label">Sílabo</label>
             <textarea name="syllabus" rows="4" class="form-control"
-                      placeholder="Lista de temas o módulos del curso">{{ course.syllabus if course else '' }}</textarea>
+                      placeholder="Lista de temas o módulos del curso">{{ course.syllabus or course.get('syllabus') if course else '' }}</textarea>
         </div>
 
         <div class="mb-3">
             <label class="form-label">Información adicional</label>
             <textarea name="additional_info" rows="3" class="form-control"
-                      placeholder="Certificación, requisitos, materiales incluidos, etc.">{{ course.additional_info if course else '' }}</textarea>
+                      placeholder="Certificación, requisitos, materiales incluidos, etc.">{{ course.additional_info or course.get('additional_info') if course else '' }}</textarea>
         </div>
 
         <div class="mb-3">
             <label class="form-label">Plantilla de certificado</label>
-
             <input type="file" name="certificate_image" class="form-control" accept=".jpg,.jpeg,.png,.webp">
 
-            {% if course and course.certificate_image %}
+            {% if course and (course.certificate_image or course.get('certificate_image')) %}
+                {% set cert = course.certificate_image or course.get('certificate_image') %}
+
                 <div class="mt-3">
                     <p class="mb-1">Certificado actual:</p>
-                    <img src="{{ url_for('static', filename=course.certificate_image) }}"
-                         alt="Certificado"
-                         class="img-fluid rounded shadow-sm"
-                         style="max-width: 300px;">
+
+                    {% if cert.startswith('images/') %}
+                        <img src="{{ url_for('static', filename=cert) }}"
+                            alt="Certificado"
+                            class="img-fluid rounded shadow-sm"
+                            style="max-width:300px;">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='images/certificates/' ~ cert) }}"
+                            alt="Certificado"
+                            class="img-fluid rounded shadow-sm"
+                            style="max-width:300px;">
+                    {% endif %}
                 </div>
             {% endif %}
         </div>
@@ -163,7 +158,7 @@
                 <label class="form-label">Precio (S/.)</label>
                 <input type="number" name="price" class="form-control"
                        step="0.01" min="0"
-                       value="{{ course.price if course else '' }}"
+                       value="{{ course.price or course.get('price') if course else '' }}"
                        placeholder="Ej: 1200.00 o dejar vacío si es consultar">
             </div>
 
@@ -173,10 +168,10 @@
                     <option value="" disabled {% if not course %}selected{% endif %}>
                         Seleccione estado
                     </option>
-                    <option value="activo" {{ 'selected' if course and course.status == 'activo' else '' }}>
+                    <option value="activo" {{ 'selected' if course and (course.status == 'activo' or course.get('status') == 'activo') else '' }}>
                         Activo
                     </option>
-                    <option value="inactivo" {{ 'selected' if course and course.status == 'inactivo' else '' }}>
+                    <option value="inactivo" {{ 'selected' if course and (course.status == 'inactivo' or course.get('status') == 'inactivo') else '' }}>
                         Inactivo
                     </option>
                 </select>
@@ -185,30 +180,15 @@
 
         <div class="form-check mb-4">
             <input type="checkbox" name="featured" value="1" class="form-check-input" id="featured"
-                   {{ 'checked' if course and course.featured else '' }}>
+                   {{ 'checked' if course and (course.featured or course.get('featured')) else '' }}>
             <label class="form-check-label" for="featured">
-                Curso destacado 
+                Curso destacado
             </label>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Imagen del curso</label>
-
-            <input type="file" name="image" class="form-control" accept=".jpg,.jpeg,.png,.webp">
-
-            {% if course and course.image %}
-                <div class="mt-3">
-                    <p class="mb-1">Imagen actual:</p>
-                    <img src="{{ url_for('static', filename='images/courses/' ~ course.image) }}"
-                         alt="Imagen del curso"
-                         class="img-fluid rounded shadow-sm"
-                         style="max-width: 200px;">
-                </div>
-            {% endif %}
-        </div>
-
         <div class="d-flex justify-content-between mt-4">
-            <a href="{{ url_for('admin_courses.list_courses') }}" class="btn btn-secondary">
+            <a href="{{ url_for('admin_courses.list_courses') }}"
+               class="btn btn-secondary">
                 Cancelar
             </a>
 
